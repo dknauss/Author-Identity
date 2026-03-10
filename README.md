@@ -21,6 +21,7 @@ Structured author identity that travels with the work — across feeds, search, 
 
 - [byline-feed/](byline-feed/) — WordPress plugin implementing the Byline spec
 
+```
 byline-feed/
 ├── byline-feed.php              # Bootstrap, adapter detection on plugins_loaded
 ├── composer.json                 # PHPUnit, WPCS dev deps
@@ -35,6 +36,7 @@ byline-feed/
 │   ├── feed-rss2.php             # xmlns:byline namespace, contributors, per-item refs
 │   ├── feed-atom.php             # Parallel Atom implementation
 │   └── perspective.php           # Meta registration, classic metabox, block editor asset enqueue
+```
 ├── src/
 │   └── perspective-panel.tsx     # Block editor PluginDocumentSettingPanel
 └── tests/phpunit/
