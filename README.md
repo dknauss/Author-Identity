@@ -23,7 +23,7 @@ Structured author identity that travels with the work — across feeds, search, 
 
 ```
 byline-feed/
-├── byline-feed.php              # Bootstrap, adapter detection on plugins_loaded
+├── byline-feed.php               # Bootstrap, adapter detection on plugins_loaded
 ├── composer.json                 # PHPUnit, WPCS dev deps
 ├── package.json                  # @wordpress/scripts for block editor build
 ├── readme.txt                    # wp.org readme
