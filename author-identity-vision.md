@@ -128,9 +128,9 @@ Concrete steps:
 4. **Coordinate with the ActivityPub plugin team.** The post_author/object_actor sync issue (#2353, closed) identified the problem but didn't resolve it. The actor management proposal (Discussion #547) suggests architectural changes are planned. If the ActivityPub plugin exposes filters for customizing `attributedTo`, the Byline identity plugin could use those filters to inject multi-author data without protocol changes.
 5. **Map Byline `role` values to fediverse metadata.** A `guest` author vs. a `staff` author carries editorial meaning that could inform how platforms display the attribution. This is forward-looking — no current platform uses this — but establishing the convention early influences the spec.
 
-## Untangling attribution, control, provenance, and rights
+## Untangling attribution, control, provenance, relationships, and rights
 
-The SocialHub discussion of the pre-FEP proposal surfaced trwnh's observation that `attributedTo` bundles too many concerns. But even that critique uses "ownership" as if it's a single thing, and it isn't. What's actually tangled up in `attributedTo` is at least four distinct relationships, and the word "ownership" obscures the differences between them.
+The SocialHub discussion of the pre-FEP proposal surfaced trwnh's observation that `attributedTo` bundles too many concerns. But even that critique uses "ownership" as if it's a single thing, and it isn't. What's actually tangled up in `attributedTo` is at least five distinct relationships, and the word "ownership" obscures the differences between them.
 
 ### Attribution
 
@@ -147,6 +147,30 @@ Control requires authentication. You need to prove you are who you claim to be b
 ### Provenance
 
 Where did this object come from, whose server delivered it, whose cryptographic keys signed it. This is what FEP-fe34 is really about with "origin-based security." It's a server trust question, not an authorship question. When Mastodon receives a federated Article, it trusts it because the delivering server's signature matches the `attributedTo` actor's public key. That's infrastructure, not editorial metadata.
+
+### Relationships
+
+How authors relate to each other and to the organizations they write for — the social graph of authorship that neither attribution nor control captures alone. Attribution answers "who created this." Control answers "who can modify it." Provenance answers "whose server delivered it." Relationships answer "how do these people know each other, how do they work together, and where else can you find them?"
+
+This is the dimension that XFN (XHTML Friends Network) was designed to express. XFN 1.1, published in 2004 and built into WordPress core since version 2.2 (2007), defines machine-readable relationship types for links between people: `friend`, `colleague`, `co-worker`, `met`, `co-resident`, `neighbor`, and the identity-assertion `me`. WordPress has shipped XFN support in its Links Manager and blogroll functionality for nearly two decades, though the feature has been hidden behind the Link Manager plugin since WordPress 3.5. The `rel="me"` attribute — the foundation of IndieWeb identity verification and now used by Mastodon for profile link verification — originated in XFN. See [protocol-coverage-map.md § XFN](protocol-coverage-map.md#identity-verification-and-social-graph) for the full protocol inventory.
+
+**Author-to-author relationships.** Co-authorship itself is a relationship — when two people share a byline, they are declaring a professional connection. But existing multi-author plugins model only the author-to-post link (who wrote this), not the author-to-author link (who works with whom). A newsroom where Jane Doe and Alex Rivera frequently co-author investigations has a collaboration pattern that is editorially meaningful but invisible in current metadata. The Byline spec's `<byline:person>` elements within a single `<item>` implicitly declare co-authorship for that post, but there is no mechanism to express durable relationships across posts — no "these authors are regular collaborators" signal.
+
+**Author-to-organization relationships.** The Byline spec's `<byline:org>` element and `affiliation` attribute capture the author-to-publisher relationship, but only in terms of the current post. An author's broader organizational affiliations — staff writer at Publication A, contributing editor at Publication B, formerly at Publication C — are part of their professional identity and relevant to credibility assessment. JSON-LD `Person` schema supports `worksFor` and `memberOf`, which can partially express this. But the relationship between an author and an organization changes over time and varies per piece: a freelancer might be staff for one outlet and a guest contributor for another, simultaneously.
+
+**Social graph via profile links.** The Byline spec's `<byline:profile>` element already carries links to an author's profiles across platforms (Mastodon, personal site, LinkedIn, etc.). Each of these links is implicitly a `rel="me"` identity assertion — "this feed author and this fediverse account are the same person." The IndieWeb community has built a robust mutual-link verification model on this foundation: if your WordPress site links to your Mastodon profile *and* your Mastodon profile links back to your WordPress site, the bidirectional link constitutes a verified identity claim without any centralized authority.
+
+XFN extends this beyond `me` to the full range of interpersonal relationships. A blogroll annotated with XFN `rel` values (`colleague`, `friend`, `co-worker`) is a machine-readable social graph that predates and conceptually underpins the social web. A WordPress author's links page, properly annotated, declares their professional and personal network in a way that search engines, feed readers, and AI systems could use to contextualize their work and their credibility.
+
+**Relationships as context for credibility.** This matters because authorship doesn't exist in isolation. An article's credibility depends not just on who wrote it but on the network of relationships surrounding the author — their institutional affiliations, their collaborators, their professional community. E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) is fundamentally a relationship question: expertise is demonstrated through a body of work, authoritativeness through institutional and peer recognition, trustworthiness through sustained reputation across a network. Structured relationship metadata — XFN annotations, `worksFor` schema, co-authorship patterns, mutual `rel="me"` verification — gives machines the signals to assess these qualities rather than guessing from unstructured text.
+
+**What the plugin should express.** The Byline identity plugin intersects with relationships at three levels:
+
+1. **Per-post co-authorship** — already handled by the adapter layer and `<byline:author>` elements in feeds. This is the minimum viable relationship: these people worked together on this piece.
+2. **Profile links as identity graph** — the `<byline:profile>` elements in feeds and `sameAs` in JSON-LD connect each author to their presence across platforms. Adding `rel="me"` semantics to these links (where bidirectional verification exists) strengthens the identity claim from "declared" to "verified."
+3. **Organizational affiliation** — the `<byline:org>` element and JSON-LD `worksFor` connect authors to institutions. This is the relationship that matters most for credibility and editorial context.
+
+The plugin does not need to implement a full social graph or replicate XFN's blogroll functionality. But it should emit relationship metadata in the output channels where it already operates — feeds, HTML head, schema — so that the relationship dimension of authorship travels with the work alongside attribution, control, provenance, and rights.
 
 ### Intellectual property
 
@@ -175,9 +199,10 @@ So when trwnh says `attributedTo` conflates authorship and ownership, it's actua
 - "Who created this" (attribution) — the staff reporter
 - "Who controls this" (access control) — the CMS admin or any user with `edit_others_posts` capability
 - "Whose server delivered this" (provenance) — the publication's server
+- "How these people relate to each other" (relationships) — the reporter is a colleague of the co-author and an employee of the publication
 - "Who holds legal rights" (IP) — the media corporation, or the author, depending on the employment relationship and license
 
-These are four different actors in a newsroom. They happen to be the same person on a single-user Mastodon account, which is why the conflation went unnoticed for so long.
+These are five different concerns in a newsroom, involving different actors and different kinds of links between them. They happen to collapse into a single identity on a single-user Mastodon account, which is why the conflation went unnoticed for so long.
 
 ### The newsroom workflow problem
 
@@ -207,7 +232,7 @@ The plugin architecture should accommodate a full spectrum of identity without f
 
 **Bots and AI** where the Byline spec's `role: bot` flag is the relevant signal, and the identity question shifts from "who is this person" to "what system generated this."
 
-For each of these, attribution (Byline), control (ActivityPub actor), provenance (server signatures), and IP rights (TDM/consent metadata) can point to different entities. The normalized author object in the adapter should carry enough information to populate all four output channels without assuming they converge on a single identity.
+For each of these, attribution (Byline), control (ActivityPub actor), provenance (server signatures), relationships (profile links, XFN, co-authorship patterns), and IP rights (TDM/consent metadata) can point to different entities and express different connections. The normalized author object in the adapter should carry enough information to populate all five dimensions without assuming they converge on a single identity.
 
 ### The deeper point: attribution vs. authentication
 
@@ -459,4 +484,4 @@ For authors concerned about privacy and safety: "your identity metadata is alway
 
 ### Design principle: reversible identity
 
-Every piece of identity metadata the plugin emits should be reversible from the origin server, even if downstream persistence is beyond the plugin's control. The plugin should never emit identity data that the author cannot later ask to have removed from the origin. And the plugin should never make it harder to remove identity than the underlying WordPress system already does — if WordPress lets you change a post's author, the plugin should let that change flow cleanly to every output channel. This principle applies across all components, from Byline feed elements to JSON-LD schema to `fediverse:creator` tags to AI consent metadata. See "The permanence problem" in the attribution/control/provenance/rights analysis for the full rationale.
+Every piece of identity metadata the plugin emits should be reversible from the origin server, even if downstream persistence is beyond the plugin's control. The plugin should never emit identity data that the author cannot later ask to have removed from the origin. And the plugin should never make it harder to remove identity than the underlying WordPress system already does — if WordPress lets you change a post's author, the plugin should let that change flow cleanly to every output channel. This principle applies across all components, from Byline feed elements to JSON-LD schema to `fediverse:creator` tags to AI consent metadata. See "The permanence problem" in the attribution/control/provenance/relationships/rights analysis for the full rationale.

@@ -285,7 +285,7 @@ This matters for the Byline Feed project in three ways:
 
 3. **WordPress already has the infrastructure.** The [Link Extension for XFN](https://wordpress.org/plugins/link-extension-for-xfn/) plugin (2025) restores the full XFN 1.1 vocabulary to the block editor. If authors are already annotating their links with XFN relationships, the Byline Feed plugin could harvest those `rel` values and carry them into feed output — no new data entry required. This is the same pattern as the adapter layer: normalize existing data into structured output.
 
-XFN is not on the Byline Feed MVP roadmap, but it's a natural extension point for the IndieWeb integration planned as Component 5 in the [vision document](author-identity-vision.md).
+XFN is not on the Byline Feed MVP roadmap, but it's a natural extension point for the IndieWeb integration planned as Component 5 in the [vision document](author-identity-vision.md). For how relationships fit into the broader authorship framework alongside attribution, control, provenance, and rights, see [author-identity-vision.md § Relationships](author-identity-vision.md#relationships).
 
 ---
 
