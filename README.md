@@ -16,6 +16,9 @@ Structured author identity that travels with the work — across feeds, search, 
 - [byline-spec-plan.md](byline-spec-plan.md) — Byline RSS spec plan
 - [byline-adoption-strategy.md](byline-adoption-strategy.md) — Byline spec adoption strategy
 - [authorship-architecture.mermaid](authorship-architecture.mermaid) — Architecture diagram
+- [ASSESSMENT.md](ASSESSMENT.md) — Project assessment: scope, current state, risks, recommendations
+- [TEST_COVERAGE_MATRIX.md](TEST_COVERAGE_MATRIX.md) — Test coverage status by domain, priority backlog, quality gates
+- [TDD_TESTING_STANDARD.md](TDD_TESTING_STANDARD.md) — Testing protocol: TDD workflow, required test cases, definition of done
 - [Implementation Strategy/](Implementation%20Strategy/) — Work package specs (WP-01 through WP-06), [gap analysis](Implementation%20Strategy/gap-analysis.md), and [delivery schedule](Implementation%20Strategy/implementation-spec.md#delivery-schedule)
 - [Byline RSS Spec Adoption/](Byline%20RSS%20Spec%20Adoption/) — Byline RSS spec adoption documents
 
