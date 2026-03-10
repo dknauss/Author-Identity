@@ -4,6 +4,8 @@
 
 Byline (bylinespec.org) is an open specification (v0.1.0, January 2026, CC0 licensed) that extends RSS 2.0, Atom, and JSON Feed with structured author identity, context, and content perspective metadata. It was created by Terry Godier to address "content collapse" — the loss of context when diverse content sources arrive in a unified feed reader stream.
 
+For how existing multi-author plugins handle (or fail to handle) feed output, see [multi-author-matrix.md § Feed output comparison](multi-author-matrix.md#feed-output-comparison).
+
 The spec adds an XML namespace (`https://bylinespec.org/1.0`) with elements for:
 
 - **`byline:person`**: structured author identity (name, bio, avatar, profile links, /now page, /uses page, theme colors).

@@ -1,6 +1,6 @@
 # Known Gaps, Security Notes, and Hardening Opportunities
 
-This document supplements the Phase 01 audit (`docs/audit/HM_WPCS_audit.md`) with additional findings from the source-level architecture review.
+This document supplements the Phase 01 audit (`docs/audit/HM_WPCS_audit.md`) with additional findings from the source-level architecture review. For how these gaps compare across all multi-author systems, see [multi-author-matrix.md](multi-author-matrix.md).
 
 ## Security
 

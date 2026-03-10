@@ -4,6 +4,8 @@
 
 Authorship is a WordPress plugin for multi-author attribution, created by Human Made (John Billion) and funded by Siemens for the Altis DXP platform. This document describes the internal architecture as verified by source-level audit of the `develop` branch (v0.2.17).
 
+For how Authorship's architecture compares to Co-Authors Plus, PublishPress Authors, and Molongui, see [multi-author-matrix.md](multi-author-matrix.md).
+
 ## Design philosophy
 
 Authorship makes three architectural bets that distinguish it from every other multi-author plugin in the WordPress ecosystem:

@@ -7,6 +7,7 @@ Structured author identity that travels with the work — across feeds, search, 
 ### Vision and research
 
 - [author-identity-vision.md](author-identity-vision.md) — Full vision document
+- [multi-author-matrix.md](multi-author-matrix.md) — **Implementation comparison matrix** across all multi-author systems
 - [architecture.md](architecture.md) — Authorship plugin architecture reference
 - [landscape.md](landscape.md) — Multi-author plugin landscape analysis
 - [known-gaps.md](known-gaps.md) — Known gaps and open questions

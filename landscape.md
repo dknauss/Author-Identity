@@ -108,3 +108,7 @@ The WordPress multi-author plugin space has a clear lineage:
 6. **2020:** Human Made Authorship — users-only approach, API-first, funded by Siemens for Altis DXP. Alpha status.
 
 Each generation addressed limitations of the previous one. Authorship represents the most recent architectural thinking, trading feature breadth for data model purity and API correctness.
+
+---
+
+For a consolidated comparison of data models, features, feed output, query architecture, security, and the gaps that motivated the Byline Feed plugin, see [multi-author-matrix.md](multi-author-matrix.md).

@@ -8,6 +8,7 @@
 - **PHP floor:** 7.4
 - **WP floor:** 6.0
 - **Dependencies:** None (all multi-author plugin integrations are optional adapters)
+- **Multi-author landscape:** See [multi-author-matrix.md](multi-author-matrix.md) for a comparison of the systems this plugin adapts
 
 ## Architectural overview
 
