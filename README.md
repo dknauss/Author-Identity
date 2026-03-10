@@ -36,11 +36,11 @@ byline-feed/
 │   ├── feed-rss2.php             # xmlns:byline namespace, contributors, per-item refs
 │   ├── feed-atom.php             # Parallel Atom implementation
 │   └── perspective.php           # Meta registration, classic metabox, block editor asset enqueue
-```
 ├── src/
 │   └── perspective-panel.tsx     # Block editor PluginDocumentSettingPanel
 └── tests/phpunit/
     ├── test-adapter-core.php     # Author resolution, roles, zero-value fields
     ├── test-feed-rss2.php        # Namespace, contributors, refs, perspective, XML well-formedness
     └── test-perspective.php      # Validation, allowed values, filter override
+```
 
