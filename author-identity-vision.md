@@ -62,11 +62,51 @@ Sources: blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/ and 
 
 **WordPress ActivityPub plugin — post author/object actor synchronization (closed).** Issue #2353 on the Automattic/wordpress-activitypub repo identified the fundamental problem: WordPress's `post_author` and the ActivityPub object's `actor`/`attributedTo` can diverge, especially with multi-author plugins like Co-Authors Plus. This led to Discussion #2358, a draft pre-FEP (Fediverse Enhancement Proposal) titled "Reassigning Actor and CoAuthor Representation for Federated CMS," which proposed new ActivityPub activity types (`Reattribute`, `Transfer`) for author reassignment and co-authorship.
 
-**The issue was closed and the pre-FEP proposal remains draft/unadopted.** The proposal required novel activity types that would need broad fediverse-wide adoption — a high bar for what is essentially a CMS-specific concern. The practical implication: the multi-author federation problem is unlikely to be solved at the ActivityPub protocol level in the near term. The path forward runs through better use of existing primitives (`attributedTo` arrays, `tag` mentions) and HTML-level mechanisms (`fediverse:creator` tags) rather than new protocol extensions. This is exactly the layer where a Byline identity plugin would operate.
+**The pre-FEP proposal (SocialHub thread, October 2025).** The proposal by jiwoon uses an English grammar analogy to map ActivityPub activities to sentence structures. The core argument: ActivityPub currently handles "subject-verb-object" actions well (3rd form: "Alice Created Note") but has no native vocabulary for expressing ownership or authorship change, which requires a ditransitive or complement structure. Author reassignment — "Admin reattributes Post to Mogu" — is modeled as a 5th-form sentence (S+V+O+O.C) where the activity changes an ontological property of the object (who it belongs to), not just its location. The proposal distinguishes between 4th-form transfer ("give something to someone," like `Move`) and 5th-form reattribution ("make something become a new state"), arguing that changing an author is identity transformation, not spatial relocation. Concrete new activity types were proposed: `Reattribute` (with `result.attributedTo` pointing to the new author) and `Transfer` (for media ownership changes via the `mediaUpload` endpoint).
 
-The underlying problem (post_author/actor divergence) remains real and unsolved in the ActivityPub plugin. It's worth monitoring whether the plugin team addresses it through internal architecture changes or new filter hooks, even though the FEP approach has not been adopted.
+The proposal also references Ghost's ActivityPub implementation (TryGhost/ActivityPub) as facing the same multi-author gap, and notes that in a CMS context, changing `post_author` is a routine editorial operation that ActivityPub's assumption of immutable authorship cannot express.
 
-References: github.com/Automattic/wordpress-activitypub/issues/2353 (closed), github.com/Automattic/wordpress-activitypub/discussions/2358, socialhub.activitypub.rocks/t/pre-fep-reassigning-actor-and-coauthor-representation-for-federated-cms/8172.
+**The critical response reveals a deeper architectural issue.** The SocialHub comment thread surfaced a fundamental objection from silverpill and trwnh — two of the most technically rigorous voices in fediverse protocol discussions:
+
+silverpill argued that co-authorship and author reassignment are separate problems. On co-authorship: `attributedTo` should always be a single actor because it carries special meaning for ownership and authorization (per FEP-fe34, the origin-based security model that supersedes FEP-c7d3). Co-authors should use a different property entirely to avoid conflating authorship with ownership. On reassignment: changing an object's author is technically similar to migrating a post between servers, and FEP-1580 (by jonny) already addresses object portability.
+
+trwnh's response went deeper into the fundamental problem: **`attributedTo` bundles too many concerns that should be separate — it is used not only for authorship, but also ownership, with no distinction between the two.** In the current fediverse, `attributedTo` simultaneously means "who created this" (authorship), "who controls this" (ownership/authorization — only the `attributedTo` actor can Update or Delete the object), and implicitly "whose outbox this came from" (provenance). These are three different relationships that happen to be the same actor in simple cases but diverge in multi-author and CMS contexts.
+
+trwnh identified several possible approaches to untangling this: use a different property for authorship (like `dc:author` or `dcterms:author`) while keeping `attributedTo` for ownership; split ownership into a separate property; derive ownership from the object's `id` (the web origin/authority component); or infer ownership from container membership. But all approaches require peers to share the same understanding, and the concept of "ownership" itself is fuzzy — the Security Vocabulary has already deprecated "owner" in favor of "controller."
+
+trwnh also flagged that some platforms don't care about activities at all (they only care about objects), so they wouldn't know how to process an Update whose target is an Activity. Other platforms treat activities as an immutable event stream. The fundamental question that needs answering first is not "what activity type represents author change" but "who should have control, and from where does authority derive?"
+
+**Why the pre-FEP was rejected (and why it matters for our project).** The proposal was rejected not because the problem is unreal but because it tried to solve a downstream symptom (no activity type for author change) without resolving the upstream cause (the conflation of authorship, ownership, and control in `attributedTo`). The fediverse community's position is: before defining vocabulary for assignments and transfers, first reach agreement on the more fundamental question of how control and identity work in a distributed system.
+
+**Implications for the Byline identity plugin:**
+
+1. **Do not assume `attributedTo` arrays are the long-term solution for multi-author.** The fediverse's direction may be to keep `attributedTo` as a single-actor ownership field and express co-authorship via a separate property. Our adapter should be designed to output authorship data to *whatever property emerges* — `attributedTo` today (since it works with Plume's proven pattern), a future `dc:author` or custom property if the specs evolve.
+
+2. **The authorship/ownership distinction is exactly what Byline solves in feeds.** The Byline spec's `byline:role` element (creator, editor, guest, staff) and `byline:author ref` are *precisely* the kind of separate authorship property that the fediverse is groping toward for `attributedTo`. A Byline identity plugin that demonstrates clean separation of authorship (Byline elements) from ownership (whatever the hosting platform uses) could inform the ActivityPub discussion.
+
+3. **The underlying problem (post_author/actor divergence) remains unsolved.** It's worth monitoring whether the WordPress ActivityPub plugin team addresses it through internal architecture changes or new filter hooks.
+
+4. **Feed-level identity is independent of this entire debate.** RSS and Atom feeds don't have the authorship/ownership conflation problem. Byline elements can express multi-author attribution cleanly because feeds are read-only — there's no "who can modify this" concern. This makes feeds the safest ground for shipping multi-author identity first.
+
+References: github.com/Automattic/wordpress-activitypub/issues/2353 (closed), github.com/Automattic/wordpress-activitypub/discussions/2358, socialhub.activitypub.rocks/t/pre-fep-reassigning-actor-and-coauthor-representation-for-federated-cms/8172, FEP-fe34 (origin-based security model), FEP-1580 (object portability).
+
+**Plume: prior art for multi-author `attributedTo` in production.** Plume (joinplu.me) is a federated blogging engine written in Rust that has been shipping `attributedTo` as a list in production since its early versions. Plume's federation documentation states: "`object.attributedTo` is a list containing the ID of the authors and of the blog in which this article have been published. If no blog ID is specified, the article will be rejected."
+
+Source-level inspection of the codebase (plume-models/src/posts.rs) reveals a fully realized multi-author data model:
+
+**Database layer.** A `post_authors` join table with `post_id` and `author_id` columns implements a proper many-to-many relationship between posts and users. A separate `blog_authors` table with `blog_id`, `author_id`, and `is_owner` handles blog membership. These are distinct relationships — who can write for this blog vs. who authored this specific post.
+
+**Sending side** (posts.rs lines 362-368). When federating an Article, the code calls `get_authors()` which queries the `post_authors` join table and returns a `Vec<User>`. It collects their AP URLs into a Vec, then pushes the blog's AP URL onto the end, and calls `set_many_attributed_tos(authors)`. The test fixtures confirm the output: `"attributedTo": ["https://plu.me/@/admin/", "https://plu.me/~/BlogName/"]`. If multiple authors were assigned to a post via the join table, the output would naturally be `["https://plu.me/@/author1/", "https://plu.me/@/author2/", "https://plu.me/~/BlogName/"]`.
+
+**Receiving side** (posts.rs lines 630-653). When parsing an incoming Article, the code iterates the `attributedTo` list using a fold. For each URL, it first tries `User::from_id()` — if that succeeds, the entry is an author and gets pushed into an authors vec. If that fails, it tries `Blog::from_id()` — if that succeeds, it's the blog. This design doesn't depend on ordering or type annotations; it resolves each URL dynamically. Multiple Users all accumulate in the authors vec.
+
+**The significance:** Plume's architecture is designed from the start for multi-author `attributedTo`. The join table, the `Vec<User>` return type, and the receiving-side fold that accumulates multiple authors are all in place. The Lemmy team wrote specific handling code for Plume's `attributedTo` format, and the SocialHub forum documents cross-platform interop with this pattern.
+
+**What is NOT implemented:** The collaborative writing UI — the ability for multiple humans to be assigned to a single post through the editorial interface — is listed in the README as planned for 1.0 but not shipped. The project appears to be in low-activity maintenance mode (156 open issues, GitHub repo is a mirror of their Gitea instance). Plume proves the federation architecture and data model for multi-author content, but the editorial workflow that would populate the `post_authors` table with multiple entries per post has not been built.
+
+**Lesson for our project:** Plume demonstrates that multi-author `attributedTo` is not theoretical — the database schema, the serialization code, the parsing code, and the cross-platform interop all exist. WordPress multi-author plugins already have the editorial UI that Plume lacks (assigning multiple authors to a post). What WordPress lacks is the federation layer that Plume has. A Byline identity plugin bridges this gap by taking WordPress's multi-author data and outputting it in the same patterns that Plume has already proven work across the fediverse.
+
+Sources: docs.joinplu.me/federation/ (federation documentation), plume-models/src/posts.rs (source), plume-models/src/post_authors.rs (join table), socialhub.activitypub.rocks/t/differences-in-group-federation-between-projects/2472, socialhub.activitypub.rocks/t/how-to-implement-activitypub-for-a-blog-that-has-multiple-authors/2673.
 
 **Ghost's ActivityPub implementation.** Ghost (TryGhost/ActivityPub) is also grappling with multi-author federation — the pre-FEP discussion explicitly references Ghost's implementation alongside WordPress. Ghost's forum has active threads on how multi-author content appears in the fediverse, with the current behavior attributing all content to a single site-level account.
 
@@ -82,7 +122,7 @@ Concrete steps:
 
 1. **Output `fediverse:creator` meta tags** from normalized author data. For each attributed author who has a fediverse handle (stored as user meta), output `<meta name="fediverse:creator" content="@handle@instance" />`. This works today with Mastodon's existing support, even though only the first author is displayed.
 2. **Populate the Mastodon REST API `authors` attribute** — this happens automatically when Mastodon fetches and parses the page's OpenGraph tags, so no additional work is needed beyond outputting the meta tags.
-3. **Work within existing primitives.** The pre-FEP for new activity types remains draft and unadopted (#2358), which reinforces a pragmatic near-term path: solve multi-author federation with existing AP primitives and HTML mechanisms, not protocol extensions. A plugin that demonstrates effective multi-author attribution using `fediverse:creator` tags, `attributedTo` arrays, and `tag` mentions builds practical evidence for how the ecosystem should handle this — which is more persuasive than a speculative spec proposal.
+3. **Work within existing primitives.** The pre-FEP for new activity types was rejected (#2358), confirming that multi-author federation will be solved with existing AP primitives and HTML mechanisms, not protocol extensions. A plugin that demonstrates effective multi-author attribution using `fediverse:creator` tags, `attributedTo` arrays, and `tag` mentions builds practical evidence for how the ecosystem should handle this — which is more persuasive than a spec proposal.
 4. **Coordinate with the ActivityPub plugin team.** The post_author/object_actor sync issue (#2353, closed) identified the problem but didn't resolve it. The actor management proposal (Discussion #547) suggests architectural changes are planned. If the ActivityPub plugin exposes filters for customizing `attributedTo`, the Byline identity plugin could use those filters to inject multi-author data without protocol changes.
 5. **Map Byline `role` values to fediverse metadata.** A `guest` author vs. a `staff` author carries editorial meaning that could inform how platforms display the attribution. This is forward-looking — no current platform uses this — but establishing the convention early influences the spec.
 
@@ -136,9 +176,9 @@ What structured metadata *can* do is make publisher intent unambiguous, create a
 
 ### Signaling layers
 
-**TDM Reservation Protocol (often referenced as TDMRep).** A W3C draft that lets publishers express machine-readable preferences about text and data mining, including `tdm-reservation` and `tdm-policy` headers. A Byline identity plugin could include these signals alongside author identity in feed output and HTML headers: "here is who wrote this, and here are the terms under which it may be mined."
+**TDMRep (Text and Data Mining Reservation Protocol).** An emerging W3C specification that lets publishers express machine-readable preferences about text and data mining. A Byline identity plugin could include TDM metadata alongside author identity in feed output and HTML headers: "here is who wrote this, and here are the terms under which it may be mined."
 
-**`ai.txt` convention.** Analogous to `robots.txt` but specifically for AI training crawlers. A plugin settings page that generates and maintains an `ai.txt` file for site-wide policy (with optional section-level rules where feasible) would lower the barrier to adoption.
+**`ai.txt` convention.** Analogous to `robots.txt` but specifically for AI training crawlers. A plugin settings page that generates and maintains an `ai.txt` file based on site-wide or per-author preferences would lower the barrier to adoption.
 
 **C2PA (Coalition for Content Provenance and Authenticity).** A standard for content provenance that is currently image/video focused but has potential for text content. Worth monitoring but premature to implement for blog posts.
 
@@ -156,9 +196,9 @@ On a multi-author site, different authors may have different preferences about A
 
 A per-author or per-post metadata field for AI training consent, expressed in both feed metadata and HTML meta tags, would give publishers granular control. Implementation:
 
-- User meta field: `byline_feed_ai_consent` with values `allow`, `deny`, `unset`.
+- User meta field: `byline_ai_training_consent` with values `allow`, `deny`, `unset`.
 - Post meta field: `_byline_ai_consent` to override author-level preference per post.
-- Output: per-response crawler-policy signals where consent is denied (for example `tdm-reservation` / `tdm-policy` headers and optional `X-Robots-Tag`/meta directives). `robots.txt` token directives (for example `Google-Extended`) should be offered only as site-wide mode, not as per-author/per-post controls. Feed items for opted-out authors could carry a dedicated rights-policy element or be excluded from the feed entirely (configurable).
+- Output: `<meta name="robots" content="noai, noimageai">` on HTML pages where consent is denied. TDMRep headers for the same. Feed items for opted-out authors could carry a rights element or be excluded from the feed entirely (configurable).
 
 This is genuinely novel. Nobody is doing per-author AI consent in structured metadata today. It would be an attention-getting feature for the journalism community, where this debate is live and urgent.
 
@@ -190,7 +230,7 @@ Per-author and per-post AI training consent fields. TDM headers. `ai.txt` genera
 
 ### Component 4: ActivityPub and fediverse bridge
 
-Output `fediverse:creator` meta tags from normalized author data — this is the most immediate win, working with Mastodon's existing support (launched July 2024 for journalism use cases). For multi-author posts, output multiple `fediverse:creator` tags; Mastodon currently displays only the first but has stated intent to support multiple authors and introduced an `authors` array in its REST API (PR #30846). The protocol-level pre-FEP for co-author representation (#2358) remains draft and unadopted, reinforcing that the practical path runs through HTML-level mechanisms and existing ActivityPub primitives rather than new protocol extensions. Monitor the ActivityPub plugin for new filter hooks on `attributedTo` and actor management (Discussion #547) that would allow injecting multi-author data without protocol changes.
+Output `fediverse:creator` meta tags from normalized author data — this is the most immediate win, working with Mastodon's existing support (launched July 2024 for journalism use cases). For multi-author posts, output multiple `fediverse:creator` tags; Mastodon currently displays only the first but has stated intent to support multiple authors and introduced an `authors` array in its REST API (PR #30846). The protocol-level pre-FEP for co-author representation (#2358) was rejected, confirming that the practical path runs through HTML-level mechanisms and existing ActivityPub primitives rather than new protocol extensions. Monitor the ActivityPub plugin for new filter hooks on `attributedTo` and actor management (Discussion #547) that would allow injecting multi-author data without protocol changes.
 
 ### Component 5: IndieWeb integration
 
@@ -206,7 +246,7 @@ This component is architecturally anticipated but not near-term. It depends on t
 
 ActivityPub defines two protocols: Server-to-Server (S2S) for federation between instances, and Client-to-Server (C2S) for users and applications to interact with their accounts on servers. The fediverse runs almost entirely on S2S. C2S has been largely ignored.
 
-The current state is stark. The AP C2S API is not widely implemented in servers, and almost no clients exist for it. Mastodon has not shipped broad, production C2S support and the practical fediverse still relies on S2S federation between servers plus the Mastodon Client API (a proprietary REST API, not part of the W3C spec) as the de facto client interface. Pleroma had basic C2S support at one point.
+The current state is stark. The AP C2S API is not widely implemented in servers, and almost no clients exist for it. Mastodon has never meaningfully implemented C2S — home timelines and posting via C2S return 404 errors. Pleroma had basic C2S working at one point. The practical fediverse uses S2S federation between servers, with the Mastodon Client API (a proprietary REST API not part of the W3C spec) as the de facto standard for client-to-server communication.
 
 The reasons for neglect go beyond inertia. As trwnh (a prominent AP contributor) articulated on SocialHub in November 2024: the C2S API suffers from an "impedance mismatch" — a social network wants timelines, search, streaming, and bookmarks, while AP C2S was written for simple resource manipulations and push notifications. It's not that C2S is broken; it's that it was designed for a different kind of interaction than what Mastodon-style social networking demands.
 
@@ -293,7 +333,3 @@ For the IndieWeb community: "own your identity across every channel your writing
 For the technical SEO community: "E-E-A-T compliance from the same author data that powers your feeds."
 
 For the AI-concerned community: "structured rights expression so your consent preferences are machine-readable, not just implied."
-
-## Open-source license rationale for GPLv2-or-later
-
-GPLv2-or-later is the WordPress ecosystem default, required for wp.org distribution, and the least restrictive GPL variant for a plugin designed to bridge multiple other GPL-licensed plugins. Avoids the one-way compatibility constraint that GPLv3 introduces when downstream code is GPLv2-only.

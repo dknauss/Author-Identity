@@ -8,7 +8,7 @@ This document complements `byline-spec-plan.md`, which covers the Authorship-spe
 
 ## The adoption problem
 
-The Byline spec (v0.1.0 draft, namespace `bylinespec.org/1.0`) has zero implementations and zero feed reader support. Spec adoption requires both supply (feeds emitting Byline data) and demand (readers parsing it). A WordPress plugin that "just works" for tens of thousands of multi-author sites lowers the supply-side barrier to zero. The pitch to feed reader developers then becomes: "here are real feeds already emitting Byline data — here's what you could do with it in your UI."
+The Byline spec (v0.1.0, January 2026) has zero implementations and zero feed reader support. Spec adoption requires both supply (feeds emitting Byline data) and demand (readers parsing it). A WordPress plugin that "just works" for tens of thousands of multi-author sites lowers the supply-side barrier to zero. The pitch to feed reader developers then becomes: "here are real feeds already emitting Byline data — here's what you could do with it in your UI."
 
 ## Addressable audience
 
@@ -17,12 +17,10 @@ The Byline spec (v0.1.0 draft, namespace `bylinespec.org/1.0`) has zero implemen
 | Co-Authors Plus | ~20,000 | Yes — taxonomy + CPT guest authors | Must support |
 | PublishPress Authors | ~20,000 | Yes — taxonomy + term meta (and optional user role) | Must support |
 | Molongui Authorship | ~10,000 | Yes — custom post type guest authors | Nice to have |
-| Simple Author Box | ~80,000 | No — display only, single author | Covered by core fallback |
+| Simple Author Box | ~60,000 | No — display only, single author | Covered by core fallback |
 | WP Post Author | ~10,000 | Partial — display focused | Covered by core fallback |
 | HM Authorship | N/A (Composer only) | Yes — WP_User only | Skip (low count, high capability users) |
 | No plugin (core WP) | Millions | Single `post_author` | Must support (baseline) |
-
-Install counts are a wp.org snapshot as of March 7, 2026 and should be refreshed before launch messaging.
 
 **Primary targets:** Co-Authors Plus + PublishPress Authors (~40K multi-author sites) + core WordPress fallback (every WordPress site).
 
@@ -59,9 +57,7 @@ Auto-detect which multi-author plugin is active and load the corresponding adapt
 
 ```
 1. Co-Authors Plus     → check function_exists( 'get_coauthors' )
-2. PublishPress Authors → check function_exists( 'publishpress_authors_get_post_authors' )
-                          or function_exists( 'get_post_authors' )
-                          or class_exists( 'MultipleAuthors\\Classes\\Objects\\Author' )
+2. PublishPress Authors → check function_exists( 'get_post_authors' ) or class MultipleAuthors
 3. Molongui Authorship  → check class_exists( 'Molongui\Authorship\Author' )
 4. HM Authorship        → check function_exists( 'Authorship\get_authors' )
 5. Core WordPress        → always available as fallback
@@ -96,13 +92,11 @@ CAP's `get_coauthors()` returns an array of objects with a `->type` property: `'
 
 **PublishPress Authors adapter**
 
-PPA exposes authors via `publishpress_authors_get_post_authors()`, `get_post_authors()`, or through its `MultipleAuthors\Classes\Objects\Author` class. Each author object has `term_id`, `user_id` (0 for pure guest authors), `is_guest`, `display_name`, and profile fields accessible via term meta.
+PPA exposes authors via `get_post_authors()` or through its `MultipleAuthors\Classes\Objects\Author` class. Each author object has `term_id`, `user_id` (0 for pure guest authors), `is_guest`, `display_name`, and profile fields accessible via term meta.
 
 ```php
 function get_byline_authors_ppa( WP_Post $post ) : array {
-    $authors = function_exists( 'publishpress_authors_get_post_authors' )
-        ? publishpress_authors_get_post_authors( $post->ID )
-        : get_post_authors( $post->ID ); // or MultipleAuthors API
+    $authors = get_post_authors( $post->ID ); // or MultipleAuthors API
     return array_map( function( $author ) {
         $user = $author->user_id ? get_userdata( $author->user_id ) : null;
         return (object) [
@@ -210,11 +204,11 @@ Once the plugin is live:
 - Submit feeds from test sites to the Byline validator at bylinespec.org/tools/validator.
 - Document the number of feeds emitting Byline data (even a rough estimate based on install count).
 - Write a blog post demonstrating the output with screenshots of what a Byline-aware reader could display.
-- Submit talks to publisher-focused and open-web events (optional amplifier, not a dependency for adoption).
+- Present at WordCamp Canada 2025: "Solving Content Collapse: Structured Identity in WordPress Feeds."
 
 ### Phase 3: engage the reader side
 
-- Open issues or PRs on popular open-source feed readers (NetNewsWire, Miniflux, FreshRSS, Liferea) with mockups showing how Byline data could enhance their author display.
+- Open issues or PRs on popular open-source feed readers (NetNewsWire, Miniflux, FreshRSS, Reeder) with mockups showing how Byline data could enhance their author display.
 - Engage the IndieWeb community, where `/now` pages, `rel="me"` verification, and feed-first publishing already have traction.
 - Coordinate with Terry Godier on the spec repo to list the WordPress plugin as the first implementation.
 
@@ -226,16 +220,6 @@ As a first implementor, provide feedback on the spec based on real-world impleme
 - Whether `byline:perspective` should support custom/extensible values beyond the enumerated list.
 - How `byline:role` interacts with WordPress's more granular capability system.
 - Whether `byline:affiliation` is practically implementable without dedicated editorial workflow tooling.
-
-## Execution gates (go/no-go criteria)
-
-Use explicit gates so the project does not overextend before market signal exists. Not every output channel depends on Byline spec adoption — the gates reflect this. See `implementation-spec.md` for full rationale.
-
-1. **Gate A — MVP quality (before launch):** WP-01/02/03 complete, feed output validates against bylinespec.org validator, and compatibility tested on core WP + CAP + PPA.
-2. **Gate B — supply signal (after launch):** measurable public feed adoption (validated feeds from production sites), plus issue reports/feedback from real operators.
-3. **Gate B' — adapter-proven expansion (after B):** `fediverse:creator` (WP-04), JSON-LD schema (WP-05), and WP-06 HTML/header signals (TDM headers, `robots.txt` tokens, `ai.txt`). These output channels have deployed infrastructure already consuming their signals — Mastodon parses `fediverse:creator` tags today, Google parses schema.org today. They do not depend on Byline feed reader adoption.
-4. **Gate C — demand signal:** at least one feed reader maintainer confirms parsing interest or a prototype parser exists.
-5. **Gate D — feed-level rights (after C):** WP-06 feed integration (`cc:license` for explicit license declarations, plus any dedicated deny-policy extension). Feed-level rights metadata only has value when readers parse Byline data.
 
 ## Scope estimate
 
