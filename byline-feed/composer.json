@@ -1,0 +1,24 @@
+{
+	"name": "dknauss/byline-feed",
+	"description": "Enriches RSS and Atom feeds with structured author identity metadata following the Byline specification.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"yoast/phpunit-polyfills": "^2.0",
+		"wp-coding-standards/wpcs": "^3.0",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+	},
+	"scripts": {
+		"test": "phpunit",
+		"lint": "phpcs --standard=WordPress .",
+		"lint:fix": "phpcbf --standard=WordPress ."
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	}
+}
