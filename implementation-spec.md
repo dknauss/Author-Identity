@@ -218,3 +218,30 @@ Work packages 01 + 02 + 03 constitute the MVP:
 10. All filters are documented and functional.
 11. PHPUnit test suite passes for all adapter and feed output scenarios.
 12. No PHPCS violations against WordPress coding standards.
+13. GitHub Actions CI passes on all supported PHP/WP matrix combinations.
+
+---
+
+## Cross-cutting concerns
+
+The following concerns span multiple work packages. They are not separate deliverables — they are quality dimensions that apply throughout. For the full detail on each, see [Implementation Strategy/implementation-spec.md](Implementation%20Strategy/implementation-spec.md#cross-cutting-concerns).
+
+### 1. Continuous integration
+
+**Applies to:** All work packages. The plugin has no CI pipeline. A GitHub Actions workflow running PHPUnit (across a PHP 7.4–8.3 / WP 6.0–latest matrix), PHPCS, and the `@wordpress/scripts` build is the single highest-priority infrastructure gap. CI must exist before further work packages are developed. Separate integration test jobs should install Co-Authors Plus and PublishPress Authors as test dependencies.
+
+### 2. Adapter validation against real plugins
+
+**Applies to:** WP-01. The CAP and PPA adapters were written against those plugins' public API contracts but have not been tested against actual installations. CI integration test jobs that install specific plugin versions and run adapter/feed tests against real data are the most valuable testing investment. Edge cases: mixed user/guest author sets, author ordering, missing data fields, 5+ co-author posts, and plugin version drift.
+
+### 3. Adapter contract enforcement
+
+**Applies to:** WP-01. The `Adapter` interface's prose contract (the normalized author object shape) is not enforced in code. A validation function in `byline_feed_get_authors()` that checks required fields and applies zero-value defaults for optional fields — using `_doing_it_wrong()` in debug mode — catches malformed adapter output before it reaches feed/schema/meta output layers. This is a hardening pass, not a separate work package.
+
+### 4. Feed output validation against the Byline spec
+
+**Applies to:** WP-02. Current feed tests check XML well-formedness and structural expectations but do not validate against the Byline specification itself. Structural spec conformance tests (required attributes and children on Byline elements, vocabulary validation for roles and perspectives, omission vs. empty-element handling), and a round-trip test (parse generated XML back into author objects, verify they match input) catch encoding, escaping, and structural errors.
+
+### 5. Consumer documentation — output reference
+
+**Applies to:** Adoption strategy. The plugin needs a consumer-facing output reference (`byline-feed/docs/output-reference.md`) with annotated RSS2, Atom, JSON-LD, and HTML head examples showing every element the plugin produces and how to customize each via filters. This is separate from contributor docs (`CONTRIBUTING.md` with dev environment setup, test commands, and adapter development guide).

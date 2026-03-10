@@ -269,3 +269,149 @@ Work packages 01 + 02 + 03 constitute the MVP:
 10. All filters are documented and functional.
 11. PHPUnit test suite passes for all adapter and feed output scenarios.
 12. No PHPCS violations against WordPress coding standards.
+13. GitHub Actions CI passes on all supported PHP/WP matrix combinations.
+
+---
+
+## Cross-cutting concerns
+
+The following concerns span multiple work packages. They are not separate deliverables — they are quality dimensions that apply throughout.
+
+### 1. Continuous integration
+
+**Applies to:** All work packages.
+
+The plugin has no CI pipeline. This is the single highest-priority infrastructure gap. Without CI, every commit is a manual verification burden.
+
+**GitHub Actions workflow** (`.github/workflows/ci.yml`):
+
+- **PHP test matrix:** PHP 7.4, 8.0, 8.1, 8.2, 8.3 against WP 6.0, 6.4, latest.
+- **PHPUnit:** Run via the WordPress test harness (`bin/install-wp-tests.sh`).
+- **PHPCS:** WordPress coding standards check (already configured in `composer.json`).
+- **Node build:** `npm ci && npm run build` to verify `perspective-panel.tsx` compiles.
+- **Integration test jobs:** Separate CI jobs that install Co-Authors Plus and PublishPress Authors as test dependencies, then run the adapter and feed output tests against real plugin APIs (see § Adapter validation below).
+
+The CI workflow should be created before any further work packages are developed. Every PR must pass CI. The workflow file is part of the plugin's infrastructure, not a work package deliverable — it enables everything else.
+
+**File:** `.github/workflows/ci.yml`
+
+### 2. Adapter validation against real plugins
+
+**Applies to:** WP-01, and indirectly every work package that consumes adapter output.
+
+The CAP and PPA adapters were written against those plugins' public API contracts as documented in their source code. They have not been tested against actual plugin installations. The `function_exists` detection is standard WordPress practice and won't break — but the data those functions *return* could differ between plugin versions, and the object shapes could change in updates.
+
+**Integration test strategy:**
+
+- **CI matrix jobs** (see § CI above) that install specific versions of CAP and PPA via Composer or WP-CLI before running tests:
+  - Co-Authors Plus: latest stable from wp.org.
+  - PublishPress Authors: latest stable from wp.org (free tier).
+  - Neither installed: core fallback path.
+- **Adapter edge-case tests** (expand `test-adapter-cap.php` and `test-adapter-ppa.php`):
+  - Mixed author sets: WP users + guest authors in the same post.
+  - Author ordering: verify the adapter preserves the order returned by the upstream plugin.
+  - Missing data: guest authors with no bio, no avatar, no URL — verify all optional fields default to zero values.
+  - Large author lists: 5+ co-authors (some newsroom posts have many contributors).
+  - Plugin version drift: if CAP or PPA changes their return shapes, the test should fail early with a clear message, not produce silently wrong output.
+- **Compatibility documentation:** A minimum supported version matrix for each adapted plugin, maintained in the plugin readme and updated when CI confirms compatibility.
+
+**Files:** `tests/phpunit/test-adapter-cap.php`, `tests/phpunit/test-adapter-ppa.php` (expanded).
+
+### 3. Adapter contract enforcement
+
+**Applies to:** WP-01, and every adapter (current and future).
+
+The `Adapter` interface defines `get_authors( WP_Post $post ): array` with a prose contract in the docblock. The normalized author object shape is documented in this spec but not enforced in code. A malformed author object (missing `id`, wrong type for `profiles`, unexpected `role` value) would pass through the adapter layer silently and produce broken feed output, invalid JSON-LD, or empty `fediverse:creator` tags.
+
+**Enforcement approach:**
+
+Add a validation function that every adapter's output passes through before reaching the output layer:
+
+```php
+function validate_author_object( object $author ): object {
+    // Required fields — fail loudly if missing.
+    if ( empty( $author->id ) || ! is_string( $author->id ) ) {
+        _doing_it_wrong( __FUNCTION__, 'Author object missing required string "id" field.', '0.1.0' );
+    }
+    if ( empty( $author->display_name ) || ! is_string( $author->display_name ) ) {
+        _doing_it_wrong( __FUNCTION__, 'Author object missing required string "display_name" field.', '0.1.0' );
+    }
+
+    // Optional fields — set to zero values if absent.
+    $defaults = [
+        'description' => '',
+        'url'         => '',
+        'avatar_url'  => '',
+        'user_id'     => 0,
+        'role'        => 'contributor',
+        'is_guest'    => false,
+        'profiles'    => [],
+        'now_url'     => '',
+        'uses_url'    => '',
+        'fediverse'   => '',
+        'ai_consent'  => '',
+    ];
+    foreach ( $defaults as $key => $default ) {
+        if ( ! isset( $author->$key ) ) {
+            $author->$key = $default;
+        }
+    }
+
+    return $author;
+}
+```
+
+This runs in `byline_feed_get_authors()` after the adapter returns and before the `byline_feed_authors` filter fires. In development/debug mode (`WP_DEBUG === true`), it emits `_doing_it_wrong` notices for missing required fields. In production, it silently applies defaults for optional fields so output never breaks.
+
+This is not a separate work package — it's a hardening pass on WP-01's public API. Future adapter authors (Molongui, HM Authorship, or third-party) get immediate feedback when their adapter returns malformed data.
+
+**Files:** `inc/namespace.php` (add validation), `tests/phpunit/test-adapter-contract.php` (new — tests that intentionally malformed objects are caught).
+
+### 4. Feed output validation against the Byline spec
+
+**Applies to:** WP-02 (RSS2/Atom output).
+
+The existing feed tests check XML well-formedness and structural expectations (namespace present, contributors block exists, item refs match). They do not validate output against the Byline specification itself.
+
+**Validation approach:**
+
+- **Structural spec conformance:** Add test assertions that verify the feed output meets the Byline spec v0.1.0 requirements:
+  - `<byline:person>` MUST have `id` attribute and `<byline:name>` child.
+  - `<byline:author>` MUST have `ref` attribute matching a declared person's `id`.
+  - `<byline:role>` MUST contain a value from the spec's role vocabulary.
+  - `<byline:perspective>` MUST contain a value from the spec's perspective vocabulary.
+  - Optional elements (`<byline:context>`, `<byline:url>`, `<byline:avatar>`, `<byline:profile>`) MUST be omitted (not empty) when the underlying data is absent.
+- **Schema validation:** If bylinespec.org publishes an XSD or RelaxNG schema, add a test that validates the complete feed output against it. Until then, the structural assertions above serve as the programmatic equivalent.
+- **Round-trip test:** Parse the generated feed XML back into author objects and verify they match the input. This catches encoding issues, escaping problems, and structural errors that pass well-formedness checks but lose data.
+
+**Files:** `tests/phpunit/test-feed-rss2.php` (expanded), `tests/phpunit/test-feed-atom.php` (expanded).
+
+### 5. Consumer documentation — output reference
+
+**Applies to:** Adoption strategy, not a specific work package.
+
+The plugin will live or die on adoption. Adoption depends on two audiences understanding the output: **feed reader developers** who need to parse Byline XML, and **theme/plugin developers** who need to extend or customize the output.
+
+**Output reference document** (`byline-feed/docs/output-reference.md`):
+
+- **Annotated RSS2 example:** A complete RSS2 feed with Byline namespace, showing every element the plugin can produce, with inline comments explaining each one.
+- **Annotated Atom example:** The parallel Atom output.
+- **JSON-LD example:** The Article + Person schema output from WP-05.
+- **HTML head example:** The `fediverse:creator` and `robots`/TDM meta tags from WP-04 and WP-06.
+- **Element reference table:** Every Byline element the plugin outputs, its source in the normalized author object, and which adapter fields populate it.
+- **Filter reference:** How to customize each output element, with copy-paste code examples.
+
+This is not a `CONTRIBUTING.md` (contributor onboarding can come later). It is a consumer-facing document that answers "what does this plugin produce and how do I use it?" — the question that determines whether anyone integrates with the output.
+
+**File:** `byline-feed/docs/output-reference.md`
+
+**Contributor quick-start** (`byline-feed/CONTRIBUTING.md`):
+
+A shorter document covering:
+
+- Local dev environment: PHP 7.4+, WordPress test suite setup, `composer install`, `npm ci`.
+- How to run tests: `composer test`, `npm run build`.
+- How to add a new adapter: implement the `Adapter` interface, add detection to `bootstrap()`, add test class.
+- CI expectations: what the GitHub Actions workflow checks.
+
+**File:** `byline-feed/CONTRIBUTING.md`
