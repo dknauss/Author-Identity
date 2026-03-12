@@ -41,9 +41,9 @@
 | RSS2 multi-author per item | **Covered** | `test-feed-rss2.php` | Verifies multiple `<byline:author>` refs are emitted when multiple normalized authors are present. |
 | RSS2 standard elements preserved | **Gap** | `test-feed-rss2.php` | No test that `<author>` / `<dc:creator>` survive. |
 | RSS2 empty-field omission | **Covered** | `test-feed-rss2.php` | Verifies empty optional person fields do not emit context/url/avatar elements. |
-| Atom namespace declaration | **Gap** | Missing file | `test-feed-atom.php` does not exist. |
-| Atom contributors block | **Gap** | Missing file | No coverage. |
-| Atom per-entry author refs | **Gap** | Missing file | No coverage. |
+| Atom namespace declaration | **Covered** | `test-feed-atom.php` | Verifies `xmlns:byline` present. |
+| Atom contributors block | **Covered** | `test-feed-atom.php` | Verifies `<byline:person>` output in feed head. |
+| Atom per-entry author refs | **Covered** | `test-feed-atom.php` | Verifies `<byline:author ref>` output for entries, including multi-author cases. |
 | Atom filter parity with RSS2 | **Gap** | Missing file | Atom layer has no extensibility hooks. |
 | Perspective — valid value accepted | **Covered** | `test-perspective.php` | All 12 allowed values pass. |
 | Perspective — invalid value rejected | **Covered** | `test-perspective.php` | Returns empty string. |
@@ -73,7 +73,7 @@
 2. ~~**Create `.github/workflows/ci.yml`.**~~ Done — PHPUnit matrix, PHPCS, Node build jobs.
 3. ~~**Write `test-adapter-cap.php`.**~~ Done — normalization coverage added for user+guest CAP objects.
 4. ~~**Write `test-adapter-ppa.php`.**~~ Done — normalization coverage added for term-meta, user-fallback, and guest paths.
-5. **Write `test-feed-atom.php`.** Atom output has zero coverage.
+5. ~~**Write `test-feed-atom.php`.**~~ Done — Atom namespace, contributors, entry refs, perspective, omission, and XML coverage added.
 6. **Add an RSS2 template-level preservation test for standard feed elements.** The remaining feed gap is proving the plugin stays additive in full template render, not just unit-level output helpers.
 7. **Add adapter contract validation tests.** Verify that malformed objects are caught before reaching output.
 8. ~~**Run `npm run build` and verify perspective panel loads.**~~ CI job added and local build command is part of baseline verification.
