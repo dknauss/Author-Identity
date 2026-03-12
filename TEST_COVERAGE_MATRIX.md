@@ -31,7 +31,7 @@
 | PPA adapter — term meta resolution | **Covered** | `test-adapter-ppa.php` | Term meta description/avatar mapping verified. |
 | PPA adapter — linked user fallback | **Covered** | `test-adapter-ppa.php` | Fallback to linked user profile when term meta is missing is verified. |
 | PPA adapter — guest author handling | **Covered** | `test-adapter-ppa.php` | Guest object mapping (`role=guest`, no user-linked fields) is verified. |
-| Adapter contract validation | **Gap** | No file | No enforcement of normalized object shape. |
+| Adapter contract validation | **Covered** | `test-author-contract.php` | Invalid entries are dropped and optional fields are normalized before output layers consume author data. |
 | RSS2 namespace declaration | **Covered** | `test-feed-rss2.php` | Verifies `xmlns:byline` present. |
 | RSS2 contributors block | **Covered** | `test-feed-rss2.php` | Verifies `<byline:person>` in channel head. |
 | RSS2 per-item author refs | **Covered** | `test-feed-rss2.php` | Verifies `<byline:author ref>` matches contributor. |
@@ -75,7 +75,7 @@
 4. ~~**Write `test-adapter-ppa.php`.**~~ Done — normalization coverage added for term-meta, user-fallback, and guest paths.
 5. ~~**Write `test-feed-atom.php`.**~~ Done — Atom namespace, contributors, entry refs, perspective, omission, and XML coverage added.
 6. ~~**Add an RSS2 template-level preservation test for standard feed elements.**~~ Done — full template render now verifies `dc:creator` survives alongside Byline output.
-7. **Add adapter contract validation tests.** Verify that malformed objects are caught before reaching output.
+7. ~~**Add adapter contract validation tests.**~~ Done — malformed entries are now rejected before feed rendering.
 8. ~~**Run `npm run build` and verify perspective panel loads.**~~ CI job added and local build command is part of baseline verification.
 
 ## Quality target
