@@ -39,7 +39,7 @@
 | RSS2 well-formed XML | **Covered** | `test-feed-rss2.php` | XML parse succeeds. |
 | RSS2 profile/now/uses elements | **Gap** | `test-feed-rss2.php` | Elements not implemented in `output_person()`. |
 | RSS2 multi-author per item | **Covered** | `test-feed-rss2.php` | Verifies multiple `<byline:author>` refs are emitted when multiple normalized authors are present. |
-| RSS2 standard elements preserved | **Gap** | `test-feed-rss2.php` | No test that `<author>` / `<dc:creator>` survive. |
+| RSS2 standard elements preserved | **Covered** | `test-feed-rss2.php` | Template-level render verifies core `dc:creator` survives alongside Byline output. |
 | RSS2 empty-field omission | **Covered** | `test-feed-rss2.php` | Verifies empty optional person fields do not emit context/url/avatar elements. |
 | Atom namespace declaration | **Covered** | `test-feed-atom.php` | Verifies `xmlns:byline` present. |
 | Atom contributors block | **Covered** | `test-feed-atom.php` | Verifies `<byline:person>` output in feed head. |
@@ -74,7 +74,7 @@
 3. ~~**Write `test-adapter-cap.php`.**~~ Done — normalization coverage added for user+guest CAP objects.
 4. ~~**Write `test-adapter-ppa.php`.**~~ Done — normalization coverage added for term-meta, user-fallback, and guest paths.
 5. ~~**Write `test-feed-atom.php`.**~~ Done — Atom namespace, contributors, entry refs, perspective, omission, and XML coverage added.
-6. **Add an RSS2 template-level preservation test for standard feed elements.** The remaining feed gap is proving the plugin stays additive in full template render, not just unit-level output helpers.
+6. ~~**Add an RSS2 template-level preservation test for standard feed elements.**~~ Done — full template render now verifies `dc:creator` survives alongside Byline output.
 7. **Add adapter contract validation tests.** Verify that malformed objects are caught before reaching output.
 8. ~~**Run `npm run build` and verify perspective panel loads.**~~ CI job added and local build command is part of baseline verification.
 

@@ -27,6 +27,28 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Render the real core RSS2 template body with headers bypassed.
+	 *
+	 * WordPress's feed template calls header() before output, which conflicts
+	 * with the PHPUnit bootstrap output. Strip that single line so the rest of
+	 * the real template can render unchanged for additive-behavior assertions.
+	 *
+	 * @return string
+	 */
+	private function render_rss2_template_body(): string {
+		$template_path = ABSPATH . WPINC . '/feed-rss2.php';
+		$template      = file_get_contents( $template_path );
+
+		$this->assertIsString( $template );
+
+		$template = preg_replace( "/^header\\(.*?\\);\\n/m", '', $template, 1 );
+
+		ob_start();
+		eval( '?>' . $template );
+		return (string) ob_get_clean();
+	}
+
+	/**
 	 * Set the global feed query posts used by output_contributors().
 	 *
 	 * @param int[] $post_ids Post IDs.
@@ -309,5 +331,30 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( '<byline:context>', $feed );
 		$this->assertStringNotContainsString( '<byline:url>', $feed );
 		$this->assertStringNotContainsString( '<byline:avatar>', $feed );
+	}
+
+	public function test_full_rss2_template_preserves_dc_creator_alongside_byline_output(): void {
+		$user_id = self::factory()->user->create(
+			array(
+				'display_name'  => 'Template Author',
+				'user_nicename' => 'template-author',
+			)
+		);
+
+		$post_id = self::factory()->post->create(
+			array(
+				'post_author' => $user_id,
+				'post_status' => 'publish',
+				'post_title'  => 'Template Test Post',
+			)
+		);
+
+		$this->go_to( '/?feed=rss2&p=' . $post_id );
+
+		$feed = $this->render_rss2_template_body();
+
+		$this->assertStringContainsString( '<dc:creator><![CDATA[Template Author]]></dc:creator>', $feed );
+		$this->assertStringContainsString( '<byline:author ref="template-author"/>', $feed );
+		$this->assertStringContainsString( '<byline:contributors>', $feed );
 	}
 }
