@@ -38,9 +38,9 @@
 | RSS2 perspective output | **Covered** | `test-feed-rss2.php` | Present when set, absent when unset. |
 | RSS2 well-formed XML | **Covered** | `test-feed-rss2.php` | XML parse succeeds. |
 | RSS2 profile/now/uses elements | **Gap** | `test-feed-rss2.php` | Elements not implemented in `output_person()`. |
-| RSS2 multi-author per item | **Gap** | `test-feed-rss2.php` | No test for multiple `<byline:author>` on one item. |
+| RSS2 multi-author per item | **Covered** | `test-feed-rss2.php` | Verifies multiple `<byline:author>` refs are emitted when multiple normalized authors are present. |
 | RSS2 standard elements preserved | **Gap** | `test-feed-rss2.php` | No test that `<author>` / `<dc:creator>` survive. |
-| RSS2 empty-field omission | **Gap** | `test-feed-rss2.php` | No test that empty optional fields produce no elements. |
+| RSS2 empty-field omission | **Covered** | `test-feed-rss2.php` | Verifies empty optional person fields do not emit context/url/avatar elements. |
 | Atom namespace declaration | **Gap** | Missing file | `test-feed-atom.php` does not exist. |
 | Atom contributors block | **Gap** | Missing file | No coverage. |
 | Atom per-entry author refs | **Gap** | Missing file | No coverage. |
@@ -74,7 +74,7 @@
 3. ~~**Write `test-adapter-cap.php`.**~~ Done — normalization coverage added for user+guest CAP objects.
 4. ~~**Write `test-adapter-ppa.php`.**~~ Done — normalization coverage added for term-meta, user-fallback, and guest paths.
 5. **Write `test-feed-atom.php`.** Atom output has zero coverage.
-6. **Add RSS2 tests for multi-author, standard-element preservation, and empty-field omission.** These are spec-required scenarios with no test.
+6. **Add an RSS2 template-level preservation test for standard feed elements.** The remaining feed gap is proving the plugin stays additive in full template render, not just unit-level output helpers.
 7. **Add adapter contract validation tests.** Verify that malformed objects are caught before reaching output.
 8. ~~**Run `npm run build` and verify perspective panel loads.**~~ CI job added and local build command is part of baseline verification.
 

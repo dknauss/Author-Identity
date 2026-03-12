@@ -51,6 +51,7 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 	}
 
 	public function tear_down(): void {
+		remove_all_filters( 'byline_feed_authors' );
 		wp_reset_postdata();
 		parent::tear_down();
 	}
@@ -183,5 +184,130 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 		$xml  = simplexml_load_string( $feed );
 
 		$this->assertNotFalse( $xml, 'Feed output must be well-formed XML.' );
+	}
+
+	public function test_contributors_are_deduplicated_across_posts(): void {
+		$user_id = self::factory()->user->create(
+			array(
+				'display_name'  => 'Shared Author',
+				'user_nicename' => 'shared-author',
+			)
+		);
+
+		$post_ids = array(
+			self::factory()->post->create(
+				array(
+					'post_author' => $user_id,
+					'post_status' => 'publish',
+				)
+			),
+			self::factory()->post->create(
+				array(
+					'post_author' => $user_id,
+					'post_status' => 'publish',
+				)
+			),
+		);
+
+		$this->set_feed_posts( $post_ids );
+
+		$feed = $this->capture_output(
+			static function () {
+				output_contributors();
+			}
+		);
+
+		$this->assertSame( 1, substr_count( $feed, '<byline:person id="shared-author">' ) );
+	}
+
+	public function test_item_outputs_multiple_author_refs_when_filtered_authors_present(): void {
+		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+		$this->set_current_post( $post_id );
+
+		add_filter(
+			'byline_feed_authors',
+			static function () {
+				return array(
+					(object) array(
+						'id'           => 'author-one',
+						'display_name' => 'Author One',
+						'description'  => '',
+						'url'          => '',
+						'avatar_url'   => '',
+						'user_id'      => 1,
+						'role'         => 'staff',
+						'is_guest'     => false,
+						'profiles'     => array(),
+						'now_url'      => '',
+						'uses_url'     => '',
+						'fediverse'    => '',
+						'ai_consent'   => '',
+					),
+					(object) array(
+						'id'           => 'author-two',
+						'display_name' => 'Author Two',
+						'description'  => '',
+						'url'          => '',
+						'avatar_url'   => '',
+						'user_id'      => 2,
+						'role'         => 'guest',
+						'is_guest'     => true,
+						'profiles'     => array(),
+						'now_url'      => '',
+						'uses_url'     => '',
+						'fediverse'    => '',
+						'ai_consent'   => '',
+					),
+				);
+			}
+		);
+
+		$feed = $this->capture_output(
+			static function () {
+				output_item();
+			}
+		);
+
+		$this->assertSame( 2, substr_count( $feed, '<byline:author ref="' ) );
+		$this->assertStringContainsString( '<byline:author ref="author-one"/>', $feed );
+		$this->assertStringContainsString( '<byline:author ref="author-two"/>', $feed );
+	}
+
+	public function test_person_omits_empty_optional_fields(): void {
+		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+		$this->set_feed_posts( array( $post_id ) );
+
+		add_filter(
+			'byline_feed_authors',
+			static function () {
+				return array(
+					(object) array(
+						'id'           => 'minimal-author',
+						'display_name' => 'Minimal Author',
+						'description'  => '',
+						'url'          => '',
+						'avatar_url'   => '',
+						'user_id'      => 0,
+						'role'         => 'contributor',
+						'is_guest'     => false,
+						'profiles'     => array(),
+						'now_url'      => '',
+						'uses_url'     => '',
+						'fediverse'    => '',
+						'ai_consent'   => '',
+					),
+				);
+			}
+		);
+
+		$feed = $this->capture_output(
+			static function () {
+				output_contributors();
+			}
+		);
+
+		$this->assertStringNotContainsString( '<byline:context>', $feed );
+		$this->assertStringNotContainsString( '<byline:url>', $feed );
+		$this->assertStringNotContainsString( '<byline:avatar>', $feed );
 	}
 }
