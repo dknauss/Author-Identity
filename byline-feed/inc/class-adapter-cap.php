@@ -12,10 +12,16 @@ namespace Byline_Feed;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Co-Authors Plus adapter implementation.
+ */
 class Adapter_CAP implements Adapter {
 
 	/**
-	 * {@inheritDoc}
+	 * Get normalized authors for a post using Co-Authors Plus.
+	 *
+	 * @param \WP_Post $post Post object.
+	 * @return object[]
 	 */
 	public function get_authors( \WP_Post $post ): array {
 		if ( ! function_exists( 'get_coauthors' ) ) {
@@ -49,6 +55,16 @@ class Adapter_CAP implements Adapter {
 		 */
 		$role = apply_filters( 'byline_feed_role', $role, $coauthor, null );
 
+		$fediverse  = '';
+		$ai_consent = '';
+
+		if ( $user_id ) {
+			$fediverse_meta  = get_user_meta( $user_id, 'byline_feed_fediverse', true );
+			$ai_consent_meta = get_user_meta( $user_id, 'byline_feed_ai_consent', true );
+			$fediverse       = is_string( $fediverse_meta ) ? $fediverse_meta : '';
+			$ai_consent      = is_string( $ai_consent_meta ) ? $ai_consent_meta : '';
+		}
+
 		return (object) array(
 			'id'           => $coauthor->user_nicename ?? '',
 			'display_name' => $coauthor->display_name ?? '',
@@ -61,8 +77,8 @@ class Adapter_CAP implements Adapter {
 			'profiles'     => array(),
 			'now_url'      => '',
 			'uses_url'     => '',
-			'fediverse'    => $user_id ? ( get_user_meta( $user_id, 'byline_feed_fediverse', true ) ?: '' ) : '',
-			'ai_consent'   => $user_id ? ( get_user_meta( $user_id, 'byline_feed_ai_consent', true ) ?: '' ) : '',
+			'fediverse'    => $fediverse,
+			'ai_consent'   => $ai_consent,
 		);
 	}
 }

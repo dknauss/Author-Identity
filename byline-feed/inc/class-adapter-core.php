@@ -12,16 +12,32 @@ namespace Byline_Feed;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Core WordPress adapter implementation.
+ */
 class Adapter_Core implements Adapter {
 
 	/**
-	 * {@inheritDoc}
+	 * Get normalized authors for a post using core WordPress authorship.
+	 *
+	 * @param \WP_Post $post Post object.
+	 * @return object[]
 	 */
 	public function get_authors( \WP_Post $post ): array {
 		$user = get_userdata( (int) $post->post_author );
 
 		if ( ! $user ) {
 			return array();
+		}
+
+		$fediverse = get_user_meta( $user->ID, 'byline_feed_fediverse', true );
+		if ( ! is_string( $fediverse ) ) {
+			$fediverse = '';
+		}
+
+		$ai_consent = get_user_meta( $user->ID, 'byline_feed_ai_consent', true );
+		if ( ! is_string( $ai_consent ) ) {
+			$ai_consent = '';
 		}
 
 		return array(
@@ -37,8 +53,8 @@ class Adapter_Core implements Adapter {
 				'profiles'     => array(),
 				'now_url'      => '',
 				'uses_url'     => '',
-				'fediverse'    => get_user_meta( $user->ID, 'byline_feed_fediverse', true ) ?: '',
-				'ai_consent'   => get_user_meta( $user->ID, 'byline_feed_ai_consent', true ) ?: '',
+				'fediverse'    => $fediverse,
+				'ai_consent'   => $ai_consent,
 			),
 		);
 	}

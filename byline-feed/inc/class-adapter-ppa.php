@@ -12,10 +12,16 @@ namespace Byline_Feed;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * PublishPress Authors adapter implementation.
+ */
 class Adapter_PPA implements Adapter {
 
 	/**
-	 * {@inheritDoc}
+	 * Get normalized authors for a post using PublishPress Authors.
+	 *
+	 * @param \WP_Post $post Post object.
+	 * @return object[]
 	 */
 	public function get_authors( \WP_Post $post ): array {
 		if ( function_exists( 'publishpress_authors_get_post_authors' ) ) {
@@ -54,14 +60,30 @@ class Adapter_PPA implements Adapter {
 		$avatar_url  = '';
 
 		if ( $term_id ) {
-			$description = get_term_meta( $term_id, 'description', true ) ?: '';
-			$avatar_url  = get_term_meta( $term_id, 'avatar', true ) ?: '';
+			$description_meta = get_term_meta( $term_id, 'description', true );
+			$avatar_meta      = get_term_meta( $term_id, 'avatar', true );
+			$description      = is_string( $description_meta ) ? $description_meta : '';
+			$avatar_url       = is_string( $avatar_meta ) ? $avatar_meta : '';
 		}
 
 		if ( $user ) {
-			$description = $description ?: $user->description;
-			$url         = $user->user_url;
-			$avatar_url  = $avatar_url ?: get_avatar_url( $user->ID );
+			if ( '' === $description ) {
+				$description = $user->description;
+			}
+			$url = $user->user_url;
+			if ( '' === $avatar_url ) {
+				$avatar_url = get_avatar_url( $user->ID );
+			}
+		}
+
+		$fediverse  = '';
+		$ai_consent = '';
+
+		if ( $user_id ) {
+			$fediverse_meta  = get_user_meta( $user_id, 'byline_feed_fediverse', true );
+			$ai_consent_meta = get_user_meta( $user_id, 'byline_feed_ai_consent', true );
+			$fediverse       = is_string( $fediverse_meta ) ? $fediverse_meta : '';
+			$ai_consent      = is_string( $ai_consent_meta ) ? $ai_consent_meta : '';
 		}
 
 		return (object) array(
@@ -76,8 +98,8 @@ class Adapter_PPA implements Adapter {
 			'profiles'     => array(),
 			'now_url'      => '',
 			'uses_url'     => '',
-			'fediverse'    => $user_id ? ( get_user_meta( $user_id, 'byline_feed_fediverse', true ) ?: '' ) : '',
-			'ai_consent'   => $user_id ? ( get_user_meta( $user_id, 'byline_feed_ai_consent', true ) ?: '' ) : '',
+			'fediverse'    => $fediverse,
+			'ai_consent'   => $ai_consent,
 		);
 	}
 }

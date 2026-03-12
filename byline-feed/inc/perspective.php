@@ -42,7 +42,7 @@ function get_allowed_values(): array {
 function register_hooks(): void {
 	add_action( 'init', __NAMESPACE__ . '\\register_meta' );
 	add_action( 'add_meta_boxes', __NAMESPACE__ . '\\register_metabox' );
-	add_action( 'save_post', __NAMESPACE__ . '\\save_metabox', 10, 2 );
+	add_action( 'save_post', __NAMESPACE__ . '\\save_metabox' );
 	add_action( 'enqueue_block_editor_assets', __NAMESPACE__ . '\\enqueue_editor_assets' );
 }
 
@@ -50,15 +50,19 @@ function register_hooks(): void {
  * Register the _byline_perspective post meta.
  */
 function register_meta(): void {
-	register_post_meta( '', '_byline_perspective', array(
-		'type'              => 'string',
-		'single'            => true,
-		'show_in_rest'      => true,
-		'sanitize_callback' => __NAMESPACE__ . '\\sanitize_perspective',
-		'auth_callback'     => function () {
-			return current_user_can( 'edit_posts' );
-		},
-	) );
+	register_post_meta(
+		'',
+		'_byline_perspective',
+		array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => __NAMESPACE__ . '\\sanitize_perspective',
+			'auth_callback'     => function () {
+				return current_user_can( 'edit_posts' );
+			},
+		)
+	);
 }
 
 /**
@@ -122,15 +126,15 @@ function render_metabox( \WP_Post $post ): void {
 /**
  * Save the perspective meta from the classic editor.
  *
- * @param int      $post_id The post ID.
- * @param \WP_Post $post    The post object.
+ * @param int $post_id The post ID.
  */
-function save_metabox( int $post_id, \WP_Post $post ): void {
+function save_metabox( int $post_id ): void {
 	if ( ! isset( $_POST['byline_feed_perspective_nonce'] ) ) {
 		return;
 	}
 
-	if ( ! wp_verify_nonce( $_POST['byline_feed_perspective_nonce'], 'byline_feed_perspective' ) ) {
+	$nonce = sanitize_text_field( wp_unslash( $_POST['byline_feed_perspective_nonce'] ) );
+	if ( ! wp_verify_nonce( $nonce, 'byline_feed_perspective' ) ) {
 		return;
 	}
 
@@ -142,9 +146,12 @@ function save_metabox( int $post_id, \WP_Post $post ): void {
 		return;
 	}
 
-	$value = isset( $_POST['byline_feed_perspective'] )
-		? sanitize_perspective( wp_unslash( $_POST['byline_feed_perspective'] ) )
-		: '';
+	$value = '';
+
+	if ( isset( $_POST['byline_feed_perspective'] ) ) {
+		$raw_value = sanitize_text_field( wp_unslash( $_POST['byline_feed_perspective'] ) );
+		$value     = sanitize_perspective( $raw_value );
+	}
 
 	if ( '' === $value ) {
 		delete_post_meta( $post_id, '_byline_perspective' );

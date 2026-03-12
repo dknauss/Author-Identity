@@ -66,11 +66,14 @@ function output_contributors(): void {
 	foreach ( $persons as $author ) {
 		$id = esc_attr( $author->id );
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Value is escaped via esc_attr().
 		echo "\t\t\t<byline:person id=\"{$id}\">\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- esc_xml_value() handles XML escaping.
 		echo "\t\t\t\t<byline:name>" . esc_xml_value( $author->display_name ) . "</byline:name>\n";
 
 		if ( ! empty( $author->description ) ) {
 			$context = mb_substr( wp_strip_all_tags( $author->description ), 0, 280 );
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- esc_xml_value() handles XML escaping.
 			echo "\t\t\t\t<byline:context>" . esc_xml_value( $context ) . "</byline:context>\n";
 		}
 
@@ -102,15 +105,18 @@ function output_entry(): void {
 
 	foreach ( $authors as $author ) {
 		$ref = esc_attr( $author->id );
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Value is escaped via esc_attr().
 		echo "\t\t<byline:author ref=\"{$ref}\"/>\n";
 
 		if ( ! empty( $author->role ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- esc_xml_value() handles XML escaping.
 			echo "\t\t<byline:role>" . esc_xml_value( $author->role ) . "</byline:role>\n";
 		}
 	}
 
 	$perspective = byline_feed_get_perspective( $post );
 	if ( '' !== $perspective ) {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- esc_xml_value() handles XML escaping.
 		echo "\t\t<byline:perspective>" . esc_xml_value( $perspective ) . "</byline:perspective>\n";
 	}
 }

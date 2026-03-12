@@ -110,6 +110,7 @@ function output_person( object $author ): void {
 	 * @param string $xml    The person XML.
 	 * @param object $author The normalized author object.
 	 */
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- XML payload is escaped before filter application.
 	echo apply_filters( 'byline_feed_person_xml', $xml, $author );
 }
 
@@ -148,6 +149,7 @@ function output_item(): void {
 	 * @param \WP_Post $post    The post.
 	 * @param object[] $authors The normalized author array.
 	 */
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- XML payload is escaped before filter application.
 	echo apply_filters( 'byline_feed_item_xml', $xml, $post, $authors );
 
 	/**
