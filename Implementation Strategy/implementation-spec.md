@@ -186,7 +186,8 @@ The plugin exposes the following public API for theme and plugin developers:
 - `byline_feed_role` — override role mapping per author per post. Receives `( $role, $author_object, $post )`.
 - `byline_feed_perspective` — compute or override perspective. Receives `( $perspective, $post )`.
 - `byline_feed_person_xml` — modify the XML output for a `byline:person` element. Receives `( $xml, $author_object )`.
-- `byline_feed_item_xml` — modify the XML output for per-item Byline elements. Receives `( $xml, $post, $authors )`.
+- `byline_feed_item_xml` — modify RSS2 item XML. Receives `( $xml, $post, $authors )`.
+- `byline_feed_atom_entry_xml` — modify Atom entry XML. Receives `( $xml, $post, $authors )`.
 - `byline_feed_schema_person` — modify the JSON-LD Person object. Receives `( $person_array, $author_object )`.
 - `byline_feed_ai_consent` — override AI consent per author per post. Receives `( $consent, $author_object, $post )`.
 - `byline_feed_fediverse_handle` — override fediverse handle per author. Receives `( $handle, $author_object )`.
@@ -419,12 +420,13 @@ The plugin will live or die on adoption. Adoption depends on two audiences under
 
 - **Annotated RSS2 example:** A complete RSS2 feed with Byline namespace, showing every element the plugin can produce, with inline comments explaining each one.
 - **Annotated Atom example:** The parallel Atom output.
+- **Annotated JSON Feed example:** The current `_byline` extension mapping and top-level `authors` behavior.
 - **JSON-LD example:** The Article + Person schema output from WP-05.
 - **HTML head example:** The `fediverse:creator` and `robots`/TDM meta tags from WP-04 and WP-06.
 - **Element reference table:** Every Byline element the plugin outputs, its source in the normalized author object, and which adapter fields populate it.
 - **Filter reference:** How to customize each output element, with copy-paste code examples.
 
-This is not a `CONTRIBUTING.md` (contributor onboarding can come later). It is a consumer-facing document that answers "what does this plugin produce and how do I use it?" — the question that determines whether anyone integrates with the output.
+This is now present in the repository and should be treated as a maintained contract document. It answers "what does this plugin produce and how do I use it?" — the question that determines whether anyone integrates with the output.
 
 **File:** `byline-feed/docs/output-reference.md`
 
@@ -455,16 +457,7 @@ The following items should be resolved before starting WP-04. They address code 
 
 ### R-2. Decide on Atom filter naming
 
-`feed-atom.php` fires the `byline_feed_item_xml` filter — the same name RSS2 uses. A callback added to modify RSS2 item output will also run on Atom entries. Two options:
-
-1. **Rename the Atom filter** to `byline_feed_atom_entry_xml` (and `byline_feed_atom_person_xml` if person output is also separated). This gives consumers independent control.
-2. **Keep shared names and document the behavior.** Simpler if the Byline XML structure is intentionally identical across feed formats.
-
-The `byline_feed_person_xml` filter sharing is less risky since person XML is format-independent, but the item/entry filter should be an explicit decision.
-
-**Resolve before:** Any consumer-facing documentation or WP-04, whichever comes first.
-
-**Files:** `inc/feed-atom.php`, consumer documentation.
+`feed-atom.php` now fires the format-specific `byline_feed_atom_entry_xml` filter, while RSS2 keeps `byline_feed_item_xml`. This keeps XML customizations explicit per feed format and avoids accidental cross-application of RSS2 callbacks to Atom entries.
 
 ### R-3. Add Atom role output test
 

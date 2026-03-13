@@ -32,7 +32,6 @@ Files still planned by the implementation strategy that do not yet exist:
 | `tests/phpunit/test-fediverse.php` | WP-04 | No automated coverage for fediverse output |
 | `tests/phpunit/test-schema.php` | WP-05 | No automated coverage for JSON-LD output |
 | `tests/phpunit/test-rights.php` | WP-06 | No automated coverage for rights output |
-| `byline-feed/docs/output-reference.md` | Adoption / consumer docs | No consumer-facing output reference yet |
 
 ---
 
@@ -52,11 +51,7 @@ The adapter layer already normalizes `fediverse` and `ai_consent` fields, but th
 
 The perspective feature builds successfully and its feed output is tested, but block-editor behavior is not covered by browser or end-to-end tests. Regressions in panel registration, UI labels, or save behavior would currently be caught only by manual testing.
 
-### 4. Consumer-facing output documentation is still missing
-
-The repository now has contributor/process guidance, but it still lacks the plugin output reference described in the implementation strategy: annotated RSS2, Atom, JSON Feed, and HTML-head examples with filter reference and field mapping.
-
-### 5. Gate A sign-off decision
+### 4. Gate A sign-off decision
 
 The MVP feed layer (RSS2 + Atom + JSON Feed), adapter layer, perspective field, contract validation, and CI are all in place. A formal Gate A sign-off should confirm: all CI jobs pass, output matches the Byline extension vocabulary, and the plugin is ready for real-world testing before moving to WP-04.
 
@@ -66,11 +61,11 @@ The MVP feed layer (RSS2 + Atom + JSON Feed), adapter layer, perspective field, 
 
 These are not code defects, but they affect execution strategy.
 
-### 6. Remaining security advisories are development-tooling only
+### 5. Remaining security advisories are development-tooling only
 
 The high-severity npm advisories were resolved. The remaining open Dependabot alerts are moderate `webpack-dev-server` advisories inherited through the current `@wordpress/scripts` toolchain. They affect development tooling, not the shipped plugin runtime, and should be tracked as upstream risk unless the build stack is deliberately changed.
 
-### 7. Release discipline now exists, but needs consistent use
+### 6. Release discipline now exists, but needs consistent use
 
 The repository now has `CHANGELOG.md`, `RELEASE_NOTES.md`, issue templates, a PR template, and contributor guidance. The remaining gap is procedural: future releases should consistently update the changelog and apply the release-note convention when AI assistance materially shaped the release.
 
@@ -98,11 +93,10 @@ The following items appeared in earlier audits but are now resolved:
 
 | Priority | Gaps | Rationale |
 | --- | --- | --- |
-| **Pre-release** | #2 (JSON Feed tests), #5 (Gate A sign-off) | Complete test coverage for all three feed formats before declaring MVP complete |
-| **Adoption support** | #4 (consumer output reference) | Integration partners need concrete output examples |
+| **Pre-release** | #2 (JSON Feed tests), #4 (Gate A sign-off) | Complete test coverage for all three feed formats before declaring MVP complete |
 | **Next product work** | #1 (WP-04/05/06) | The MVP feed layer is in place; remaining roadmap value is in additional output channels |
 | **Risk reduction** | #3 (editor verification) | Reduces regression risk in the block editor integration |
-| **Process hygiene** | #6, #7 (track dev-tooling advisories, use changelog consistently) | Keeps maintenance and release quality disciplined without blocking feature work |
+| **Process hygiene** | #5, #6 (track dev-tooling advisories, use changelog consistently) | Keeps maintenance and release quality disciplined without blocking feature work |
 
 ---
 

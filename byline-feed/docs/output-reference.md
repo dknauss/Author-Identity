@@ -10,6 +10,7 @@ Current shipped output:
 
 - RSS2 Byline namespace and metadata
 - Atom Byline namespace and metadata
+- JSON Feed 1.1 output with `_byline` extensions
 - Perspective post meta and feed output
 - Public filters and actions for feed customization
 
@@ -239,6 +240,98 @@ This example shows the Byline additions only. Standard Atom elements such as `<a
 </feed>
 ```
 
+## JSON Feed output
+
+The plugin supports JSON Feed in two modes:
+
+- integration mode with an existing JSON Feed plugin
+- standalone fallback at `/feed/json`
+
+In both modes, it emits standard JSON Feed 1.1 fields plus Byline data in `_byline` extension objects.
+
+### Feed-level output
+
+Feed-level author entries are emitted in the top-level `authors` array and deduplicated by normalized author `id`.
+
+Example:
+
+```json
+{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "Example Site",
+  "authors": [
+    {
+      "name": "Jane Doe",
+      "url": "https://example.com/authors/jane-doe/",
+      "avatar": "https://example.com/avatar/jane.jpg",
+      "_byline": {
+        "id": "jane-doe",
+        "context": "Reporter covering local government and housing.",
+        "role": "staff",
+        "profiles": [
+          {
+            "href": "https://example.com/@jane",
+            "rel": "me"
+          }
+        ],
+        "now_url": "https://example.com/now/",
+        "uses_url": "https://example.com/uses/"
+      }
+    }
+  ],
+  "_byline": {
+    "spec_version": "1.0",
+    "org": {
+      "name": "Example Site",
+      "url": "https://example.com"
+    }
+  }
+}
+```
+
+### Item-level output
+
+Each item may include:
+
+- `authors`: one JSON Feed author entry per normalized author
+- `_byline.perspective`: when the perspective value is set and valid
+
+Example item fragment:
+
+```json
+{
+  "id": "https://example.com/?p=123",
+  "url": "https://example.com/city-budget-passes-council/",
+  "title": "City budget passes council",
+  "authors": [
+    {
+      "name": "Jane Doe",
+      "_byline": {
+        "id": "jane-doe",
+        "role": "staff"
+      }
+    },
+    {
+      "name": "Alex Smith",
+      "_byline": {
+        "id": "alex-smith",
+        "role": "contributor"
+      }
+    }
+  ],
+  "_byline": {
+    "perspective": "reporting"
+  }
+}
+```
+
+Behavior:
+
+- feed-level `authors` are deduplicated across posts
+- item-level `authors` preserve per-post attribution order
+- `_byline` carries Byline-specific properties that do not fit standard JSON Feed author fields
+- empty optional fields are omitted rather than emitted as empty values
+
 ## Perspective values
 
 The plugin accepts these perspective values:
@@ -270,7 +363,11 @@ Invalid values are silently dropped from output.
 | `byline_feed_authors` | `( object[] $authors, WP_Post $post )` | Modify normalized authors before validation and output |
 | `byline_feed_perspective` | `( string $perspective, WP_Post $post )` | Compute or override the perspective value |
 | `byline_feed_person_xml` | `( string $xml, object $author )` | Modify a single emitted `byline:person` XML fragment |
-| `byline_feed_item_xml` | `( string $xml, WP_Post $post, object[] $authors )` | Modify emitted item or entry XML fragment |
+| `byline_feed_item_xml` | `( string $xml, WP_Post $post, object[] $authors )` | Modify RSS2 item XML |
+| `byline_feed_atom_entry_xml` | `( string $xml, WP_Post $post, object[] $authors )` | Modify Atom entry XML |
+| `byline_feed_json_author_extension` | `( array $ext, object $author, ?WP_Post $post )` | Modify `_byline` author extension data in JSON Feed |
+| `byline_feed_json_item` | `( array $item, WP_Post $post )` | Modify a single JSON Feed item before output |
+| `byline_feed_json_feed` | `( array $feed )` | Modify the complete JSON Feed before encoding |
 
 ### Actions
 

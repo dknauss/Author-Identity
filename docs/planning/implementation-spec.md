@@ -113,7 +113,8 @@ The plugin exposes the following public API for theme and plugin developers:
 - `byline_feed_role` — override role mapping per author per post. Receives `( $role, $author_object, $post )`.
 - `byline_feed_perspective` — compute or override perspective. Receives `( $perspective, $post )`.
 - `byline_feed_person_xml` — modify the XML output for a `byline:person` element. Receives `( $xml, $author_object )`.
-- `byline_feed_item_xml` — modify the XML output for per-item Byline elements. Receives `( $xml, $post, $authors )`.
+- `byline_feed_item_xml` — modify RSS2 item XML. Receives `( $xml, $post, $authors )`.
+- `byline_feed_atom_entry_xml` — modify Atom entry XML. Receives `( $xml, $post, $authors )`.
 - `byline_feed_schema_person` — modify the JSON-LD Person object. Receives `( $person_array, $author_object )`.
 - `byline_feed_ai_consent` — override AI consent per author per post. Receives `( $consent, $author_object, $post )`.
 - `byline_feed_fediverse_handle` — override fediverse handle per author. Receives `( $handle, $author_object )`.
@@ -245,7 +246,7 @@ The following concerns span multiple work packages. They are not separate delive
 
 ### 5. Consumer documentation — output reference
 
-**Applies to:** Adoption strategy. The plugin still needs a consumer-facing output reference (`byline-feed/docs/output-reference.md`) with annotated RSS2, Atom, JSON-LD, and HTML head examples showing every element the plugin produces and how to customize each via filters. Repository-level contributor guidance now exists; this remaining document is specifically for integrators and downstream consumers.
+**Applies to:** Adoption strategy. The repository now has a consumer-facing output reference (`byline-feed/docs/output-reference.md`) for RSS2, Atom, and current JSON Feed output. It should be kept current as new channels land, especially JSON-LD and HTML-head output in WP-04 and WP-05.
 
 ---
 
@@ -257,4 +258,4 @@ Summary: ~3.5 weeks to wp.org submission (Gate A), ~7–8 weeks total for all wo
 
 ## Gap analysis
 
-For the current audit of what still remains vs. what the specs require, see [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md). The major remaining items are WP-04/05/06 implementation, real-plugin CI validation, editor-level verification, and the consumer-facing output reference.
+For the current audit of what still remains vs. what the specs require, see [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md). The major remaining items are WP-04/05/06 implementation, JSON Feed test coverage, and editor-level verification.

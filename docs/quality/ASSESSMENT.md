@@ -33,13 +33,13 @@ Output channels:
 | Area | Status |
 | --- | --- |
 | Adapter layer (WP-01) | Implemented, tested, and CI-verified |
-| Feed output (WP-02) | Implemented, tested, and CI-verified for RSS2 and Atom |
+| Feed output (WP-02) | Implemented for RSS2, Atom, and JSON Feed; JSON Feed tests still pending |
 | Perspective field (WP-03) | Implemented, built locally, and covered in feed tests |
 | fediverse:creator (WP-04) | Not started |
 | JSON-LD schema (WP-05) | Not started |
 | AI consent (WP-06) | Not started |
 | CI/CD | Present and passing on supported PHP/WP matrix combinations |
-| Documentation | Strong project/governance docs; consumer output reference still missing |
+| Documentation | Strong project/governance docs; consumer output reference exists and now covers current feed formats |
 
 ## Key risks
 
@@ -53,7 +53,7 @@ Output channels:
 1. **Choose the next output channel intentionally.** WP-04 and WP-05 are the most natural next feature tranches; WP-06 should not be rushed.
 2. **Add real-plugin CI validation.** Installing CAP and PPA in dedicated CI jobs is the most valuable remaining hardening step for the current adapter architecture.
 3. **Add editor-level verification.** Browser or end-to-end checks for the perspective UI would close the last major MVP-era verification gap.
-4. **Publish the output reference.** Adoption depends on consumers understanding exactly what the plugin emits and how to extend it.
+4. **Expand tests and docs in lockstep.** JSON Feed now exists in code, so test coverage and consumer docs should stay aligned as output expands.
 5. **Keep using the new governance files.** `CHANGELOG.md`, `RELEASE_NOTES.md`, templates, and contributor guidance only matter if they become part of normal release practice.
 
 ## Related documents

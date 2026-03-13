@@ -23,28 +23,30 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Register JSON Feed hooks.
  *
- * Detects whether a JSON Feed plugin is active and hooks into
- * its filter pipeline if available. Falls back to registering
- * a standalone /feed/json endpoint.
+ * JSON Feed coexistence is decided on init, after other plugins have
+ * had a chance to register their routes and filters.
  */
 function register_hooks(): void {
+	add_action( 'init', __NAMESPACE__ . '\\register_json_support', 20 );
+}
+
+/**
+ * Register JSON Feed integration filters or fallback endpoint.
+ */
+function register_json_support(): void {
 	/*
 	 * Detection strategy:
 	 * - json_feed_item filter   → WP JSON Feed plugin (manton/jsonfeed-wp).
 	 * - json_feed_init function → Alternate JSON Feed plugins.
-	 *
-	 * If neither is found, register our own endpoint. The adapter
-	 * pattern means we consume the same normalized author data
-	 * regardless of which path we take.
+	 * - do_feed_json action     → A plugin has already registered the endpoint.
 	 */
-	if ( has_filter( 'json_feed_item' ) || function_exists( 'json_feed_init' ) ) {
+	if ( has_filter( 'json_feed_item' ) || function_exists( 'json_feed_init' ) || has_action( 'do_feed_json' ) ) {
 		add_filter( 'json_feed_item', __NAMESPACE__ . '\\filter_json_feed_item', 10, 2 );
 		add_filter( 'json_feed_channel', __NAMESPACE__ . '\\filter_json_feed_channel' );
 		return;
 	}
 
-	// Standalone fallback.
-	add_action( 'init', __NAMESPACE__ . '\\register_feed_endpoint' );
+	register_feed_endpoint();
 }
 
 /**
@@ -240,7 +242,7 @@ function render_json_feed(): void {
 	$post_authors = array(); // Cache for per-item output.
 
 	foreach ( $posts as $post ) {
-		$authors              = byline_feed_get_authors( $post );
+		$authors                   = byline_feed_get_authors( $post );
 		$post_authors[ $post->ID ] = $authors;
 
 		foreach ( $authors as $author ) {
