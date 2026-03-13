@@ -104,10 +104,10 @@ npm run build
 
 Key architectural rules carried through the docs and plugin:
 
-- Byline output is additive and must not replace standard feed elements
-- all output channels consume the same normalized author contract
-- optional upstream plugin integrations remain optional adapters, not hard dependencies
-- scope is intentionally constrained to the defined work packages
+- Byline output is additive and must not replace standard feed elements.
+- All output channels consume the same normalized author contract.
+- Optional upstream plugin integrations remain optional adapters, not hard dependencies.
+- Scope is intentionally constrained to the defined work packages.
 
 ## AI assistance disclosure
 
@@ -115,6 +115,6 @@ This repository includes material changes produced with OpenAI Codex assistance.
 
 Preferred attribution model:
 
-- repository ownership and accountability remain with the human maintainer
-- commits with substantial AI-generated changes may include an `Assisted-by: Codex` trailer
-- AI assistance is disclosed explicitly rather than represented as human co-authorship
+- Repository ownership and accountability remain with the human maintainer.
+- Commits with substantial AI-generated changes may include an `Assisted-by: Codex` trailer.
+- AI assistance is disclosed explicitly rather than represented as human co-authorship.
