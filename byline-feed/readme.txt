@@ -14,6 +14,8 @@ Enriches RSS2 and Atom feeds with structured author identity metadata following 
 
 Byline Feed adds machine-readable author metadata to WordPress feeds using the [Byline specification](https://bylinespec.org/). It is designed to work with multi-author editorial sites while preserving standard feed elements for compatibility.
 
+Implementation-level output details, including example RSS2 and Atom fragments, are documented in the repository at `byline-feed/docs/output-reference.md`.
+
 The plugin currently supports:
 
 * RSS2 and Atom Byline output
@@ -29,6 +31,7 @@ Byline Feed is additive. It preserves core feed elements such as `<author>` and 
 
 * Adds `byline:contributors` with structured contributor profiles at feed level
 * Adds item-level `byline:author`, `byline:role`, and `byline:perspective` elements
+* Supports `byline:profile`, `byline:now`, and `byline:uses` from plugin-owned user meta
 * Auto-detects Co-Authors Plus, PublishPress Authors, or falls back to core WordPress
 * Adds a Content Perspective field in the block editor and classic editor
 * Validates normalized author data before output
@@ -60,6 +63,10 @@ The Byline specification defines an XML namespace for structured author attribut
 = Which feed formats are supported? =
 
 RSS2 and Atom are supported now.
+
+= Where can I see the exact XML this plugin emits? =
+
+See `byline-feed/docs/output-reference.md` in the project repository for current examples, hook references, and field mapping notes.
 
 = Which multi-author plugins are supported? =
 

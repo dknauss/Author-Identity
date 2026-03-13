@@ -99,6 +99,27 @@ function output_person( object $author ): void {
 		$xml .= "\t\t\t\t<byline:avatar>" . esc_url( $author->avatar_url ) . "</byline:avatar>\n";
 	}
 
+	if ( ! empty( $author->profiles ) && is_array( $author->profiles ) ) {
+		foreach ( $author->profiles as $profile ) {
+			$href = isset( $profile['href'] ) ? esc_url( $profile['href'] ) : '';
+			$rel  = isset( $profile['rel'] ) ? esc_attr( $profile['rel'] ) : '';
+
+			if ( '' === $href || '' === $rel ) {
+				continue;
+			}
+
+			$xml .= "\t\t\t\t<byline:profile href=\"{$href}\" rel=\"{$rel}\"/>\n";
+		}
+	}
+
+	if ( ! empty( $author->now_url ) ) {
+		$xml .= "\t\t\t\t<byline:now>" . esc_url( $author->now_url ) . "</byline:now>\n";
+	}
+
+	if ( ! empty( $author->uses_url ) ) {
+		$xml .= "\t\t\t\t<byline:uses>" . esc_url( $author->uses_url ) . "</byline:uses>\n";
+	}
+
 	$xml .= "\t\t\t</byline:person>\n";
 
 	/**

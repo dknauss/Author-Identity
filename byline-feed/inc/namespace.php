@@ -31,6 +31,7 @@ function bootstrap(): void {
 	// Register feed output hooks.
 	Feed_RSS2\register_hooks();
 	Feed_Atom\register_hooks();
+	register_author_meta_hooks();
 
 	// Register perspective meta field.
 	Perspective\register_hooks();
@@ -220,7 +221,7 @@ function normalize_author_object( $author, \WP_Post $post ): ?object {
 		'user_id'      => isset( $author->user_id ) ? (int) $author->user_id : 0,
 		'role'         => isset( $author->role ) && is_string( $author->role ) ? $author->role : '',
 		'is_guest'     => ! empty( $author->is_guest ),
-		'profiles'     => isset( $author->profiles ) && is_array( $author->profiles ) ? $author->profiles : array(),
+		'profiles'     => isset( $author->profiles ) ? normalize_byline_profiles( $author->profiles ) : array(),
 		'now_url'      => isset( $author->now_url ) && is_string( $author->now_url ) ? $author->now_url : '',
 		'uses_url'     => isset( $author->uses_url ) && is_string( $author->uses_url ) ? $author->uses_url : '',
 		'fediverse'    => isset( $author->fediverse ) && is_string( $author->fediverse ) ? $author->fediverse : '',

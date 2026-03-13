@@ -108,4 +108,41 @@ class Test_Adapter_Core extends WP_UnitTestCase {
 		$this->assertSame( '', $author->fediverse );
 		$this->assertSame( '', $author->ai_consent );
 	}
+
+	public function test_reads_plugin_owned_profile_meta_for_user(): void {
+		$user_id = self::factory()->user->create(
+			array(
+				'display_name'  => 'Profile User',
+				'user_nicename' => 'profile-user',
+			)
+		);
+
+		update_user_meta(
+			$user_id,
+			'byline_feed_profiles',
+			array(
+				array(
+					'rel'  => 'me',
+					'href' => 'https://example.com/@profile-user',
+				),
+			)
+		);
+		update_user_meta( $user_id, 'byline_feed_now_url', 'https://example.com/now/' );
+		update_user_meta( $user_id, 'byline_feed_uses_url', 'https://example.com/uses/' );
+
+		$post_id = self::factory()->post->create(
+			array(
+				'post_author' => $user_id,
+			)
+		);
+
+		$post    = get_post( $post_id );
+		$authors = $this->adapter->get_authors( $post );
+		$author  = $authors[0];
+
+		$this->assertSame( 'https://example.com/@profile-user', $author->profiles[0]['href'] );
+		$this->assertSame( 'me', $author->profiles[0]['rel'] );
+		$this->assertSame( 'https://example.com/now/', $author->now_url );
+		$this->assertSame( 'https://example.com/uses/', $author->uses_url );
+	}
 }

@@ -43,6 +43,18 @@ class Test_Adapter_PPA extends WP_UnitTestCase {
 
 		update_user_meta( $user_id, 'byline_feed_fediverse', '@alex@example.social' );
 		update_user_meta( $user_id, 'byline_feed_ai_consent', 'deny' );
+		update_user_meta(
+			$user_id,
+			'byline_feed_profiles',
+			array(
+				array(
+					'rel'  => 'me',
+					'href' => 'https://example.com/alex/social',
+				),
+			)
+		);
+		update_user_meta( $user_id, 'byline_feed_now_url', 'https://example.com/alex/now' );
+		update_user_meta( $user_id, 'byline_feed_uses_url', 'https://example.com/alex/uses' );
 
 		$term = wp_insert_term( 'Alex Author Term', 'category', array( 'slug' => 'alex-term' ) );
 		$this->assertIsArray( $term );
@@ -69,6 +81,10 @@ class Test_Adapter_PPA extends WP_UnitTestCase {
 		$this->assertFalse( $author->is_guest );
 		$this->assertSame( '@alex@example.social', $author->fediverse );
 		$this->assertSame( 'deny', $author->ai_consent );
+		$this->assertSame( 'https://example.com/alex/social', $author->profiles[0]['href'] );
+		$this->assertSame( 'me', $author->profiles[0]['rel'] );
+		$this->assertSame( 'https://example.com/alex/now', $author->now_url );
+		$this->assertSame( 'https://example.com/alex/uses', $author->uses_url );
 	}
 
 	public function test_normalize_falls_back_to_user_profile_when_term_meta_missing(): void {

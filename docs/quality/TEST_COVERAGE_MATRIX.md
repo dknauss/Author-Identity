@@ -37,13 +37,14 @@
 | RSS2 per-item author refs | **Covered** | `test-feed-rss2.php` | Verifies `<byline:author ref>` matches contributor. |
 | RSS2 perspective output | **Covered** | `test-feed-rss2.php` | Present when set, absent when unset. |
 | RSS2 well-formed XML | **Covered** | `test-feed-rss2.php` | XML parse succeeds. |
-| RSS2 profile/now/uses elements | **Gap** | `test-feed-rss2.php` | Elements not implemented in `output_person()`. |
+| RSS2 profile/now/uses elements | **Covered** | `test-feed-rss2.php` | Verifies `byline:profile`, `byline:now`, and `byline:uses` output when normalized fields are present. |
 | RSS2 multi-author per item | **Covered** | `test-feed-rss2.php` | Verifies multiple `<byline:author>` refs are emitted when multiple normalized authors are present. |
 | RSS2 standard elements preserved | **Covered** | `test-feed-rss2.php` | Template-level render verifies core `dc:creator` survives alongside Byline output. |
 | RSS2 empty-field omission | **Covered** | `test-feed-rss2.php` | Verifies empty optional person fields do not emit context/url/avatar elements. |
 | Atom namespace declaration | **Covered** | `test-feed-atom.php` | Verifies `xmlns:byline` present. |
 | Atom contributors block | **Covered** | `test-feed-atom.php` | Verifies `<byline:person>` output in feed head. |
 | Atom per-entry author refs | **Covered** | `test-feed-atom.php` | Verifies `<byline:author ref>` output for entries, including multi-author cases. |
+| Atom profile/now/uses elements | **Covered** | `test-feed-atom.php` | Verifies `byline:profile`, `byline:now`, and `byline:uses` output when normalized fields are present. |
 | Atom filter parity with RSS2 | **Covered** | `test-feed-atom.php` | Atom contributors and entry output now honor the same person/item XML filters as RSS2. |
 | Perspective — valid value accepted | **Covered** | `test-perspective.php` | All 12 allowed values pass. |
 | Perspective — invalid value rejected | **Covered** | `test-perspective.php` | Returns empty string. |

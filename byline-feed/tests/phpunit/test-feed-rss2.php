@@ -331,6 +331,52 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( '<byline:context>', $feed );
 		$this->assertStringNotContainsString( '<byline:url>', $feed );
 		$this->assertStringNotContainsString( '<byline:avatar>', $feed );
+		$this->assertStringNotContainsString( '<byline:profile ', $feed );
+		$this->assertStringNotContainsString( '<byline:now>', $feed );
+		$this->assertStringNotContainsString( '<byline:uses>', $feed );
+	}
+
+	public function test_person_outputs_profiles_now_and_uses_when_present(): void {
+		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+		$this->set_feed_posts( array( $post_id ) );
+
+		add_filter(
+			'byline_feed_authors',
+			static function () {
+				return array(
+					(object) array(
+						'id'           => 'linked-author',
+						'display_name' => 'Linked Author',
+						'description'  => '',
+						'url'          => '',
+						'avatar_url'   => '',
+						'user_id'      => 1,
+						'role'         => 'staff',
+						'is_guest'     => false,
+						'profiles'     => array(
+							array(
+								'rel'  => 'me',
+								'href' => 'https://example.com/@linked-author',
+							),
+						),
+						'now_url'      => 'https://example.com/now/',
+						'uses_url'     => 'https://example.com/uses/',
+						'fediverse'    => '',
+						'ai_consent'   => '',
+					),
+				);
+			}
+		);
+
+		$feed = $this->capture_output(
+			static function () {
+				output_contributors();
+			}
+		);
+
+		$this->assertStringContainsString( '<byline:profile href="https://example.com/@linked-author" rel="me"/>', $feed );
+		$this->assertStringContainsString( '<byline:now>https://example.com/now/</byline:now>', $feed );
+		$this->assertStringContainsString( '<byline:uses>https://example.com/uses/</byline:uses>', $feed );
 	}
 
 	public function test_full_rss2_template_preserves_dc_creator_alongside_byline_output(): void {

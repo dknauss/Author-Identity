@@ -199,4 +199,44 @@ class Test_Author_Contract extends WP_UnitTestCase {
 		$this->assertCount( 1, $messages );
 		$this->assertStringContainsString( 'missing a valid string id', $messages[0] );
 	}
+
+	public function test_profiles_are_normalized_to_valid_rel_href_pairs_only(): void {
+		$post_id = self::factory()->post->create();
+		$post    = get_post( $post_id );
+
+		add_filter(
+			'byline_feed_adapter',
+			static function () {
+				return new class() implements Adapter {
+					public function get_authors( \WP_Post $post ): array {
+						return array(
+							(object) array(
+								'id'           => 'profile-author',
+								'display_name' => 'Profile Author',
+								'profiles'     => array(
+									array(
+										'rel'  => 'me',
+										'href' => 'https://example.com/@profile-author',
+									),
+									array(
+										'rel'  => '',
+										'href' => 'https://example.com/invalid',
+									),
+									array(
+										'rel' => 'author',
+									),
+								),
+							),
+						);
+					}
+				};
+			}
+		);
+
+		$authors = byline_feed_get_authors( $post );
+
+		$this->assertCount( 1, $authors[0]->profiles );
+		$this->assertSame( 'me', $authors[0]->profiles[0]['rel'] );
+		$this->assertSame( 'https://example.com/@profile-author', $authors[0]->profiles[0]['href'] );
+	}
 }

@@ -271,6 +271,52 @@ class Test_Feed_Atom extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( '<byline:context>', $feed );
 		$this->assertStringNotContainsString( '<byline:url>', $feed );
 		$this->assertStringNotContainsString( '<byline:avatar>', $feed );
+		$this->assertStringNotContainsString( '<byline:profile ', $feed );
+		$this->assertStringNotContainsString( '<byline:now>', $feed );
+		$this->assertStringNotContainsString( '<byline:uses>', $feed );
+	}
+
+	public function test_contributors_output_profiles_now_and_uses_when_present(): void {
+		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+		$this->set_feed_posts( array( $post_id ) );
+
+		add_filter(
+			'byline_feed_authors',
+			static function () {
+				return array(
+					(object) array(
+						'id'           => 'linked-atom-author',
+						'display_name' => 'Linked Atom Author',
+						'description'  => '',
+						'url'          => '',
+						'avatar_url'   => '',
+						'user_id'      => 1,
+						'role'         => 'staff',
+						'is_guest'     => false,
+						'profiles'     => array(
+							array(
+								'rel'  => 'me',
+								'href' => 'https://example.com/@linked-atom-author',
+							),
+						),
+						'now_url'      => 'https://example.com/now/',
+						'uses_url'     => 'https://example.com/uses/',
+						'fediverse'    => '',
+						'ai_consent'   => '',
+					),
+				);
+			}
+		);
+
+		$feed = $this->capture_output(
+			static function () {
+				output_contributors();
+			}
+		);
+
+		$this->assertStringContainsString( '<byline:profile href="https://example.com/@linked-atom-author" rel="me"/>', $feed );
+		$this->assertStringContainsString( '<byline:now>https://example.com/now/</byline:now>', $feed );
+		$this->assertStringContainsString( '<byline:uses>https://example.com/uses/</byline:uses>', $feed );
 	}
 
 	public function test_atom_output_is_well_formed_xml(): void {

@@ -95,9 +95,9 @@ class Adapter_PPA implements Adapter {
 			'user_id'      => (int) $user_id,
 			'role'         => $role,
 			'is_guest'     => $is_guest,
-			'profiles'     => array(),
-			'now_url'      => '',
-			'uses_url'     => '',
+			'profiles'     => $user_id ? get_byline_feed_profiles_for_user( (int) $user_id ) : array(),
+			'now_url'      => $user_id ? get_byline_feed_now_url_for_user( (int) $user_id ) : '',
+			'uses_url'     => $user_id ? get_byline_feed_uses_url_for_user( (int) $user_id ) : '',
 			'fediverse'    => $fediverse,
 			'ai_consent'   => $ai_consent,
 		);

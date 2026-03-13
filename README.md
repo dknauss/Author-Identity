@@ -31,9 +31,9 @@ The current implementation focus is the `byline-feed` plugin:
 
 | Status | Items |
 | --- | --- |
-| Implemented | adapter interface plus core, Co-Authors Plus, and PublishPress Authors adapters<br>RSS2 and Atom Byline output<br>content perspective storage and editor UI<br>runtime validation for the normalized author contract<br>PHPUnit, PHPCS, and GitHub Actions CI scaffolding |
+| Implemented | adapter interface plus core, Co-Authors Plus, and PublishPress Authors adapters<br>RSS2 and Atom Byline output, including `profile` / `now` / `uses` for linked WordPress users via plugin-owned meta<br>content perspective storage and editor UI<br>runtime validation for the normalized author contract<br>PHPUnit, PHPCS, and GitHub Actions CI scaffolding |
 | Not yet implemented | `fediverse:creator` output<br>multi-author JSON-LD output<br>AI consent and rights output<br>Molongui and HM Authorship adapters |
-| Primary references | [byline-feed/](byline-feed/)<br>[docs/planning/implementation-spec.md](docs/planning/implementation-spec.md)<br>[wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md) |
+| Primary references | [byline-feed/](byline-feed/)<br>[byline-feed/docs/output-reference.md](byline-feed/docs/output-reference.md)<br>[docs/planning/implementation-spec.md](docs/planning/implementation-spec.md)<br>[wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md) |
 
 ## Plugin layout
 

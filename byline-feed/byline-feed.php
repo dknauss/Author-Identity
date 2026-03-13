@@ -25,6 +25,7 @@ define( 'BYLINE_FEED_PLUGIN_FILE', __FILE__ );
 
 // Load the public API and hook registration.
 require_once BYLINE_FEED_PLUGIN_DIR . 'inc/namespace.php';
+require_once BYLINE_FEED_PLUGIN_DIR . 'inc/author-meta.php';
 
 // Load the adapter interface.
 require_once BYLINE_FEED_PLUGIN_DIR . 'inc/interface-adapter.php';

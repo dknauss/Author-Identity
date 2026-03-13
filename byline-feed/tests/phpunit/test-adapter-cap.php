@@ -43,6 +43,18 @@ class Test_Adapter_CAP extends WP_UnitTestCase {
 
 		update_user_meta( $user_id, 'byline_feed_fediverse', '@jane@example.social' );
 		update_user_meta( $user_id, 'byline_feed_ai_consent', 'allow' );
+		update_user_meta(
+			$user_id,
+			'byline_feed_profiles',
+			array(
+				array(
+					'rel'  => 'me',
+					'href' => 'https://example.com/jane/social',
+				),
+			)
+		);
+		update_user_meta( $user_id, 'byline_feed_now_url', 'https://example.com/jane/now' );
+		update_user_meta( $user_id, 'byline_feed_uses_url', 'https://example.com/jane/uses' );
 
 		$coauthor = (object) array(
 			'type'          => 'wpuser',
@@ -62,6 +74,10 @@ class Test_Adapter_CAP extends WP_UnitTestCase {
 		$this->assertFalse( $author->is_guest );
 		$this->assertSame( '@jane@example.social', $author->fediverse );
 		$this->assertSame( 'allow', $author->ai_consent );
+		$this->assertSame( 'https://example.com/jane/social', $author->profiles[0]['href'] );
+		$this->assertSame( 'me', $author->profiles[0]['rel'] );
+		$this->assertSame( 'https://example.com/jane/now', $author->now_url );
+		$this->assertSame( 'https://example.com/jane/uses', $author->uses_url );
 	}
 
 	public function test_normalize_maps_guest_author_fields(): void {
