@@ -11,7 +11,7 @@
 | Work Package | Code exists | Tests exist | Status | Quality |
 | --- | --- | --- | --- | --- |
 | WP-01: Scaffold & Adapters | All planned files | Core, CAP, PPA, contract tests | Implemented | CI-verified |
-| WP-02: RSS2 & Atom Output | Both planned files | RSS2 + Atom tests | Implemented | CI-verified |
+| WP-02: RSS2, Atom & JSON Feed Output | All three output files | RSS2 + Atom tests; JSON Feed tests pending | Implemented | RSS2/Atom CI-verified; JSON Feed needs test coverage |
 | WP-03: Perspective Field | PHP + TSX present | PHPUnit coverage for feed output | Implemented | Built locally, needs ongoing editor QA |
 | WP-04: fediverse:creator | None | None | Not started | N/A |
 | WP-05: JSON-LD Schema | None | None | Not started | N/A |
@@ -25,6 +25,7 @@ Files still planned by the implementation strategy that do not yet exist:
 
 | File | Work package | Impact |
 | --- | --- | --- |
+| `tests/phpunit/test-feed-json.php` | WP-02 | No automated coverage for JSON Feed output |
 | `inc/fediverse.php` | WP-04 | No `fediverse:creator` output yet |
 | `inc/schema.php` | WP-05 | No JSON-LD article/person graph output yet |
 | `inc/rights.php` | WP-06 | No rights / TDM / consent output yet |
@@ -32,7 +33,6 @@ Files still planned by the implementation strategy that do not yet exist:
 | `tests/phpunit/test-schema.php` | WP-05 | No automated coverage for JSON-LD output |
 | `tests/phpunit/test-rights.php` | WP-06 | No automated coverage for rights output |
 | `byline-feed/docs/output-reference.md` | Adoption / consumer docs | No consumer-facing output reference yet |
-| `byline-feed/CONTRIBUTING.md` | Contributor docs | No plugin-local contributor quick-start yet |
 
 ---
 
@@ -44,9 +44,9 @@ These are the meaningful remaining gaps after WP-01/WP-02 completion.
 
 The adapter layer already normalizes `fediverse` and `ai_consent` fields, but there is no user UI, meta registration, front-end output, or tests for fediverse attribution, JSON-LD, or rights/consent handling. The roadmap is still front-loaded around feeds and perspective only.
 
-### 2. Real-plugin validation is manual, not automated
+### 2. JSON Feed output has no test coverage
 
-CAP and PPA now have PHPUnit coverage and were manually verified against a local Studio WordPress site, but CI still does not install real copies of those plugins and run integration jobs against them. That leaves version-drift risk in upstream plugin APIs.
+`inc/feed-json.php` is implemented and wired into bootstrap, but `tests/phpunit/test-feed-json.php` does not exist yet. Needed tests: standalone `/feed/json` endpoint returns valid JSON Feed 1.1, feed-level `authors` array is deduplicated with `_byline` extensions, per-item authors carry correct roles, `_byline.perspective` present when set and absent when unset, empty optional fields are omitted, and `_byline.org` contains site metadata.
 
 ### 3. WP-03 needs stronger editor-specific verification
 
@@ -54,15 +54,11 @@ The perspective feature builds successfully and its feed output is tested, but b
 
 ### 4. Consumer-facing output documentation is still missing
 
-The repository now has contributor/process guidance, but it still lacks the plugin output reference described in the implementation strategy: annotated RSS2, Atom, JSON-LD, and HTML-head examples with filter reference and field mapping.
+The repository now has contributor/process guidance, but it still lacks the plugin output reference described in the implementation strategy: annotated RSS2, Atom, JSON Feed, and HTML-head examples with filter reference and field mapping.
 
-### 5. Feed layer code duplication and filter naming
+### 5. Gate A sign-off decision
 
-`feed-rss2.php` and `feed-atom.php` contain identical `output_person()` functions. Additionally, both layers fire the same `byline_feed_item_xml` filter name, meaning callbacks cannot distinguish RSS2 items from Atom entries. These issues are tracked as refinements R-1 through R-3 in the [implementation spec](implementation-spec.md#pre-wp-04-refinements) and should be resolved before WP-04 adds a third output channel.
-
-### 6. Author meta save/render path has no test coverage
-
-The `save_author_meta_fields()` function in `author-meta.php` handles nonce verification, capability checks, and POST data parsing but has no test. Tracked as refinement R-4 in the [implementation spec](implementation-spec.md#pre-wp-04-refinements).
+The MVP feed layer (RSS2 + Atom + JSON Feed), adapter layer, perspective field, contract validation, and CI are all in place. A formal Gate A sign-off should confirm: all CI jobs pass, output matches the Byline extension vocabulary, and the plugin is ready for real-world testing before moving to WP-04.
 
 ---
 
@@ -70,11 +66,11 @@ The `save_author_meta_fields()` function in `author-meta.php` handles nonce veri
 
 These are not code defects, but they affect execution strategy.
 
-### 7. Remaining security advisories are development-tooling only
+### 6. Remaining security advisories are development-tooling only
 
 The high-severity npm advisories were resolved. The remaining open Dependabot alerts are moderate `webpack-dev-server` advisories inherited through the current `@wordpress/scripts` toolchain. They affect development tooling, not the shipped plugin runtime, and should be tracked as upstream risk unless the build stack is deliberately changed.
 
-### 8. Release discipline now exists, but needs consistent use
+### 7. Release discipline now exists, but needs consistent use
 
 The repository now has `CHANGELOG.md`, `RELEASE_NOTES.md`, issue templates, a PR template, and contributor guidance. The remaining gap is procedural: future releases should consistently update the changelog and apply the release-note convention when AI assistance materially shaped the release.
 
@@ -87,7 +83,12 @@ The following items appeared in earlier audits but are now resolved:
 - PHPUnit infrastructure is present (`phpunit.xml.dist`, bootstrap, install script).
 - GitHub Actions CI exists and runs PHPCS, PHPUnit, and the Node build.
 - CAP, PPA, RSS2, Atom, and author-contract tests exist and pass in CI.
-- Atom now has filter parity with RSS2.
+- CAP and PPA integration CI jobs download real plugins from wordpress.org and test against live APIs.
+- Atom now has filter parity with RSS2 (renamed to `byline_feed_atom_entry_xml`).
+- Feed layer code duplication resolved — shared `output_person()` in `feed-common.php` (R-1).
+- Atom filter naming resolved — format-specific filter names (R-2).
+- Atom role test added (R-3).
+- Author meta save/render test coverage added (R-4).
 - The perspective panel builds successfully.
 - Public-repo governance files are present and tracked.
 
@@ -97,10 +98,11 @@ The following items appeared in earlier audits but are now resolved:
 
 | Priority | Gaps | Rationale |
 | --- | --- | --- |
-| **Next product work** | #1 (WP-04/05/06) | The MVP feed layer is in place; remaining roadmap value is in additional output channels |
-| **Best risk reduction** | #2 (real-plugin CI validation), #3 (editor verification) | These reduce regression risk in the most integration-heavy areas |
+| **Pre-release** | #2 (JSON Feed tests), #5 (Gate A sign-off) | Complete test coverage for all three feed formats before declaring MVP complete |
 | **Adoption support** | #4 (consumer output reference) | Integration partners need concrete output examples |
-| **Process hygiene** | #5 (track dev-tooling advisories), #6 (use changelog and release-note policy consistently) | Keeps maintenance and release quality disciplined without blocking feature work |
+| **Next product work** | #1 (WP-04/05/06) | The MVP feed layer is in place; remaining roadmap value is in additional output channels |
+| **Risk reduction** | #3 (editor verification) | Reduces regression risk in the block editor integration |
+| **Process hygiene** | #6, #7 (track dev-tooling advisories, use changelog consistently) | Keeps maintenance and release quality disciplined without blocking feature work |
 
 ---
 
