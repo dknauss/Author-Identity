@@ -100,6 +100,17 @@ npm run build
 | Node build | Asset build validation |
 | Workflow | [.github/workflows/ci.yml](.github/workflows/ci.yml) |
 
+## Governance
+
+| File | Purpose |
+| --- | --- |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development, verification, and AI-attribution guidance |
+| [CHANGELOG.md](CHANGELOG.md) | Human-readable project change history |
+| [RELEASE_NOTES.md](RELEASE_NOTES.md) | Release-note convention, including AI-assistance disclosure |
+| [.github/CODEOWNERS](.github/CODEOWNERS) | Default review ownership |
+| [.github/dependabot.yml](.github/dependabot.yml) | Automated dependency update policy |
+| [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md) | PR checklist and verification prompts |
+
 ## Design constraints
 
 Key architectural rules carried through the docs and plugin:
@@ -127,4 +138,5 @@ Practical note:
 See also:
 
 - [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CHANGELOG.md](CHANGELOG.md)
 - [RELEASE_NOTES.md](RELEASE_NOTES.md)
