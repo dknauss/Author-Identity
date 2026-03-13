@@ -1,6 +1,6 @@
 {
 	"name": "dknauss/byline-feed",
-	"description": "Enriches RSS and Atom feeds with structured author identity metadata following the Byline specification.",
+	"description": "Enriches RSS, Atom, and JSON feeds with structured author identity metadata using the Byline extension vocabulary.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {

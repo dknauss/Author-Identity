@@ -2,7 +2,7 @@
 
 ## Executive summary
 
-The Byline Feed plugin addresses a genuine gap: ~40,000 WordPress sites using multi-author plugins produce feeds with no structured author identity. The plugin uses an adapter pattern to normalize author data from Co-Authors Plus, PublishPress Authors, or core WordPress, then routes that data into RSS2/Atom feeds (via the Byline XML namespace), HTML head (JSON-LD, fediverse:creator), HTTP headers (TDM-Rep), and well-known files (ai.txt).
+The Byline Feed plugin addresses a genuine gap: ~40,000 WordPress sites using multi-author plugins produce feeds with no structured author identity. The plugin uses an adapter pattern to normalize author data from Co-Authors Plus, PublishPress Authors, or core WordPress, then routes that data into RSS2, Atom, and JSON feeds using the Byline extension vocabulary, plus HTML head (JSON-LD, fediverse:creator), HTTP headers (TDM-Rep), and well-known files (ai.txt).
 
 The MVP (WP-01/02/03) — adapter layer, feed output, and perspective meta field — is substantially complete with CI, adapter tests, feed tests, and contract validation all in place. Post-MVP components (fediverse:creator, JSON-LD, AI consent) are 0% implemented but fully specified. Pre-WP-04 refinements (code deduplication, filter naming, Atom role test, author meta save test) are documented and ready to execute.
 

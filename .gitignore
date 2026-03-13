@@ -50,3 +50,6 @@ wp-config.php
 # Local development caches
 byline-feed/.npm-cache/
 byline-feed/.phpunit.result.cache
+
+# Private (not for public repo)
+/private/

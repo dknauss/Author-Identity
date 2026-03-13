@@ -31,6 +31,7 @@ function bootstrap(): void {
 	// Register feed output hooks.
 	Feed_RSS2\register_hooks();
 	Feed_Atom\register_hooks();
+	Feed_JSON\register_hooks();
 	register_author_meta_hooks();
 
 	// Register perspective meta field.

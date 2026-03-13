@@ -12,7 +12,7 @@ This repository has two related parts:
 The current implementation focus is the `byline-feed` plugin:
 
 - Normalize author data from core WordPress, Co-Authors Plus, and PublishPress Authors.
-- Emit structured Byline metadata in RSS2 and Atom.
+- Emit structured Byline metadata in RSS2, Atom, and JSON Feed.
 - Expose content perspective metadata for feed consumers.
 - Preserve standard feed elements so Byline output remains additive.
 
@@ -21,17 +21,17 @@ The current implementation focus is the `byline-feed` plugin:
 | Area | Items |
 | --- | --- |
 | Vision | [author-identity-vision.md](docs/vision/author-identity-vision.md): Full project vision and positioning |
-| Planning | [implementation-spec.md](docs/planning/implementation-spec.md): Plugin implementation spec and roadmap<br>[byline-spec-plan.md](docs/planning/byline-spec-plan.md): Byline spec assessment and implementation plan<br>[byline-adoption-strategy.md](docs/planning/byline-adoption-strategy.md): Adoption and ecosystem strategy |
+| Planning | [implementation-spec.md](docs/planning/implementation-spec.md): Plugin implementation spec and roadmap<br>[byline-spec-plan.md](docs/planning/byline-spec-plan.md): Byline extension assessment and implementation plan<br>[byline-adoption-strategy.md](docs/planning/byline-adoption-strategy.md): Adoption and ecosystem strategy |
 | Research | [multi-author-matrix.md](docs/research/multi-author-matrix.md): Comparison of WordPress multi-author systems<br>[protocol-coverage-map.md](docs/research/protocol-coverage-map.md): Protocol coverage by output channel<br>[architecture.md](docs/research/architecture.md): HM Authorship architecture notes<br>[landscape.md](docs/research/landscape.md): Plugin ecosystem and historical lineage<br>[known-gaps.md](docs/research/known-gaps.md): Risks, gaps, and open issues<br>[authorship-architecture.mermaid](docs/research/authorship-architecture.mermaid): Architecture diagram source |
 | Quality | [ASSESSMENT.md](docs/quality/ASSESSMENT.md): Project assessment and recommendations<br>[TEST_COVERAGE_MATRIX.md](docs/quality/TEST_COVERAGE_MATRIX.md): Coverage status and remaining gaps<br>[TDD_TESTING_STANDARD.md](docs/quality/TDD_TESTING_STANDARD.md): Testing workflow and definition of done |
 | Work Packages | [wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md): Detailed delivery specs by package<br>[gap-analysis.md](Implementation%20Strategy/gap-analysis.md): Audit of code against the specs<br>[implementation-spec.md](Implementation%20Strategy/implementation-spec.md): Supplemental strategy details and cross-cutting concerns |
-| Legacy | [Byline RSS Spec Adoption/](Byline%20RSS%20Spec%20Adoption/): Earlier Byline-specific planning and legacy positioning documents |
+| Legacy | [Byline RSS Spec Adoption/](Byline%20RSS%20Spec%20Adoption/): Earlier planning and legacy positioning documents |
 
 ## Plugin status
 
 | Status | Items |
 | --- | --- |
-| Implemented | adapter interface plus core, Co-Authors Plus, and PublishPress Authors adapters<br>RSS2 and Atom Byline output, including `profile` / `now` / `uses` for linked WordPress users via plugin-owned meta<br>content perspective storage and editor UI<br>runtime validation for the normalized author contract<br>PHPUnit, PHPCS, and GitHub Actions CI scaffolding |
+| Implemented | adapter interface plus core, Co-Authors Plus, and PublishPress Authors adapters<br>RSS2, Atom, and JSON Feed Byline output, including `profile` / `now` / `uses` for linked WordPress users via plugin-owned meta<br>content perspective storage and editor UI<br>runtime validation for the normalized author contract<br>PHPUnit, PHPCS, and GitHub Actions CI scaffolding |
 | Not yet implemented | `fediverse:creator` output<br>multi-author JSON-LD output<br>AI consent and rights output<br>Molongui and HM Authorship adapters |
 | Primary references | [byline-feed/](byline-feed/)<br>[byline-feed/docs/output-reference.md](byline-feed/docs/output-reference.md)<br>[docs/planning/implementation-spec.md](docs/planning/implementation-spec.md)<br>[wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md) |
 
