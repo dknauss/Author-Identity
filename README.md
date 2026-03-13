@@ -1,51 +1,164 @@
-# Author Identity for the Open Web
+# Author Identity Vision
 
-Structured author identity that travels with the work — across feeds, search, the fediverse, and AI — from one source of truth in WordPress.
+Structured author identity that travels with the work across feeds, search, the fediverse, and AI from one source of truth in WordPress.
 
-## Repository layout
+## What this repository contains
 
-### Vision and research
+This repository has two related parts:
 
-- [author-identity-vision.md](docs/vision/author-identity-vision.md) — Full vision document
-- [multi-author-matrix.md](docs/research/multi-author-matrix.md) — **Implementation comparison matrix** across all multi-author systems
-- [protocol-coverage-map.md](docs/research/protocol-coverage-map.md) — **Protocol coverage map** — which specs carry which identity signals across which channels
-- [architecture.md](docs/research/architecture.md) — Authorship plugin architecture reference
-- [landscape.md](docs/research/landscape.md) — Multi-author plugin landscape analysis
-- [known-gaps.md](docs/research/known-gaps.md) — Known gaps and open questions
-- [implementation-spec.md](docs/planning/implementation-spec.md) — Byline Feed plugin implementation spec and roadmap
-- [byline-spec-plan.md](docs/planning/byline-spec-plan.md) — Byline RSS spec plan
-- [byline-adoption-strategy.md](docs/planning/byline-adoption-strategy.md) — Byline spec adoption strategy
-- [authorship-architecture.mermaid](authorship-architecture.mermaid) — Architecture diagram
-- [ASSESSMENT.md](docs/quality/ASSESSMENT.md) — Project assessment: scope, current state, risks, recommendations
-- [TEST_COVERAGE_MATRIX.md](docs/quality/TEST_COVERAGE_MATRIX.md) — Test coverage status by domain, priority backlog, quality gates
-- [TDD_TESTING_STANDARD.md](docs/quality/TDD_TESTING_STANDARD.md) — Testing protocol: TDD workflow, required test cases, definition of done
-- [Implementation Strategy/](Implementation%20Strategy/) — Work package specs (WP-01 through WP-06), [gap analysis](Implementation%20Strategy/gap-analysis.md), and [delivery schedule](Implementation%20Strategy/implementation-spec.md#delivery-schedule)
-- [Byline RSS Spec Adoption/](Byline%20RSS%20Spec%20Adoption/) — Byline RSS spec adoption documents
+1. A documentation set defining the vision, protocol landscape, implementation strategy, and quality gates for portable author identity in WordPress.
+2. A WordPress plugin, [byline-feed](byline-feed/), that implements the MVP portion of that strategy.
 
-### Plugin
+The current implementation focus is the `byline-feed` plugin:
 
-- [byline-feed/](byline-feed/) — WordPress plugin implementing the Byline spec
+- normalize author data from core WordPress, Co-Authors Plus, and PublishPress Authors
+- emit structured Byline metadata in RSS2 and Atom
+- expose content perspective metadata for feed consumers
+- preserve standard feed elements so Byline output remains additive
 
-```
+## Documentation map
+
+### Vision
+
+- [docs/vision/author-identity-vision.md](docs/vision/author-identity-vision.md) - Full project vision and positioning
+
+### Planning
+
+- [docs/planning/implementation-spec.md](docs/planning/implementation-spec.md) - Plugin implementation spec and roadmap
+- [docs/planning/byline-spec-plan.md](docs/planning/byline-spec-plan.md) - Byline spec assessment and implementation plan
+- [docs/planning/byline-adoption-strategy.md](docs/planning/byline-adoption-strategy.md) - Adoption and ecosystem strategy
+
+### Research
+
+- [docs/research/multi-author-matrix.md](docs/research/multi-author-matrix.md) - Comparison of WordPress multi-author systems
+- [docs/research/protocol-coverage-map.md](docs/research/protocol-coverage-map.md) - Protocol coverage by output channel
+- [docs/research/architecture.md](docs/research/architecture.md) - HM Authorship architecture notes
+- [docs/research/landscape.md](docs/research/landscape.md) - Plugin ecosystem and historical lineage
+- [docs/research/known-gaps.md](docs/research/known-gaps.md) - Risks, gaps, and open issues
+- [docs/research/authorship-architecture.mermaid](docs/research/authorship-architecture.mermaid) - Architecture diagram source
+
+### Quality
+
+- [docs/quality/ASSESSMENT.md](docs/quality/ASSESSMENT.md) - Project assessment and recommendations
+- [docs/quality/TEST_COVERAGE_MATRIX.md](docs/quality/TEST_COVERAGE_MATRIX.md) - Coverage status and remaining gaps
+- [docs/quality/TDD_TESTING_STANDARD.md](docs/quality/TDD_TESTING_STANDARD.md) - Testing workflow and definition of done
+
+### Work Packages
+
+- [Implementation Strategy/wp-01.md](Implementation%20Strategy/wp-01.md) through [Implementation Strategy/wp-06.md](Implementation%20Strategy/wp-06.md) - Detailed delivery specs by package
+- [Implementation Strategy/gap-analysis.md](Implementation%20Strategy/gap-analysis.md) - Audit of code against the specs
+- [Implementation Strategy/implementation-spec.md](Implementation%20Strategy/implementation-spec.md) - Supplemental strategy details and cross-cutting concerns
+
+### Legacy and Spec-Adoption Material
+
+- [Byline RSS Spec Adoption/](Byline%20RSS%20Spec%20Adoption/) - Earlier Byline-specific planning and legacy positioning documents
+
+## Plugin status
+
+The `byline-feed` plugin currently includes:
+
+- adapter interface plus core, Co-Authors Plus, and PublishPress Authors adapters
+- RSS2 and Atom Byline output
+- content perspective storage and editor UI
+- runtime validation for the normalized author contract
+- PHPUnit, PHPCS, and GitHub Actions CI scaffolding
+
+Not implemented yet:
+
+- `fediverse:creator` output
+- multi-author JSON-LD output
+- AI consent and rights output
+- Molongui and HM Authorship adapters
+
+Primary implementation references:
+
+- [byline-feed/](byline-feed/)
+- [docs/planning/implementation-spec.md](docs/planning/implementation-spec.md)
+- [Implementation Strategy/wp-01.md](Implementation%20Strategy/wp-01.md) to [Implementation Strategy/wp-06.md](Implementation%20Strategy/wp-06.md)
+
+## Plugin layout
+
+```text
 byline-feed/
-├── byline-feed.php               # Bootstrap, adapter detection on plugins_loaded
-├── composer.json                 # PHPUnit, WPCS dev deps
-├── package.json                  # @wordpress/scripts for block editor build
-├── readme.txt                    # wp.org readme
-├── inc/
-│   ├── interface-adapter.php     # Adapter contract
-│   ├── class-adapter-core.php    # Core WP fallback
-│   ├── class-adapter-cap.php     # Co-Authors Plus
-│   ├── class-adapter-ppa.php     # PublishPress Authors
-│   ├── namespace.php             # Public API: byline_feed_get_authors(), get_perspective(), role mapping
-│   ├── feed-rss2.php             # xmlns:byline namespace, contributors, per-item refs
-│   ├── feed-atom.php             # Parallel Atom implementation
-│   └── perspective.php           # Meta registration, classic metabox, block editor asset enqueue
-├── src/
-│   └── perspective-panel.tsx     # Block editor PluginDocumentSettingPanel
-└── tests/phpunit/
-    ├── test-adapter-core.php     # Author resolution, roles, zero-value fields
-    ├── test-feed-rss2.php        # Namespace, contributors, refs, perspective, XML well-formedness
-    └── test-perspective.php      # Validation, allowed values, filter override
+|-- byline-feed.php
+|-- composer.json
+|-- package.json
+|-- phpunit.xml.dist
+|-- bin/
+|   `-- install-wp-tests.sh
+|-- inc/
+|   |-- interface-adapter.php
+|   |-- class-adapter-core.php
+|   |-- class-adapter-cap.php
+|   |-- class-adapter-ppa.php
+|   |-- namespace.php
+|   |-- feed-rss2.php
+|   |-- feed-atom.php
+|   `-- perspective.php
+|-- src/
+|   `-- perspective-panel.tsx
+|-- build/
+|   |-- perspective-panel.tsx.asset.php
+|   `-- perspective-panel.tsx.js
+`-- tests/phpunit/
+    |-- bootstrap.php
+    |-- test-adapter-core.php
+    |-- test-adapter-cap.php
+    |-- test-adapter-ppa.php
+    |-- test-author-contract.php
+    |-- test-feed-atom.php
+    |-- test-feed-rss2.php
+    `-- test-perspective.php
 ```
 
+## Development and verification
+
+### PHP tooling
+
+From [byline-feed/](byline-feed/):
+
+```bash
+composer install
+composer lint
+WP_TESTS_DIR=/tmp/byline-wp-tests composer test
+```
+
+### JavaScript build
+
+From [byline-feed/](byline-feed/):
+
+```bash
+npm install
+npm run build
+```
+
+### CI
+
+GitHub Actions currently runs:
+
+- PHPUnit across PHP 7.4 through 8.3 and WordPress 6.0, 6.4, and latest
+- PHPCS with WordPress Coding Standards
+- Node asset build
+
+Workflow file:
+
+- [.github/workflows/ci.yml](.github/workflows/ci.yml)
+
+## Design constraints
+
+Key architectural rules carried through the docs and plugin:
+
+- Byline output is additive and must not replace standard feed elements
+- all output channels consume the same normalized author contract
+- optional upstream plugin integrations remain optional adapters, not hard dependencies
+- scope is intentionally constrained to the defined work packages
+
+## AI assistance disclosure
+
+This repository includes material changes produced with OpenAI Codex assistance.
+
+Preferred attribution model:
+
+- repository ownership and accountability remain with the human maintainer
+- commits with substantial AI-generated changes may include an `Assisted-by: Codex` trailer
+- AI assistance is disclosed explicitly rather than represented as human co-authorship
