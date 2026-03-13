@@ -118,3 +118,13 @@ Preferred attribution model:
 - Repository ownership and accountability remain with the human maintainer.
 - Commits with substantial AI-generated changes may include an `Assisted-by: Codex` trailer.
 - AI assistance is disclosed explicitly rather than represented as human co-authorship.
+
+Practical note:
+
+- GitHub's contributor graph reflects commit author identity, not assistance trailers.
+- Codex is disclosed in repository documentation and commit trailers, but is not represented as a separate GitHub contributor account.
+
+See also:
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [RELEASE_NOTES.md](RELEASE_NOTES.md)
