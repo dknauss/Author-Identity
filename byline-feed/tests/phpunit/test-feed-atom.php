@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for RSS2 Byline feed output.
+ * Tests for Atom Byline feed output.
  *
  * @package Byline_Feed
  */
@@ -8,11 +8,11 @@
 namespace Byline_Feed\Tests;
 
 use WP_UnitTestCase;
-use function Byline_Feed\Feed_RSS2\output_contributors;
-use function Byline_Feed\Feed_RSS2\output_item;
-use function Byline_Feed\Feed_RSS2\output_namespace;
+use function Byline_Feed\Feed_Atom\output_contributors;
+use function Byline_Feed\Feed_Atom\output_entry;
+use function Byline_Feed\Feed_Atom\output_namespace;
 
-class Test_Feed_RSS2 extends WP_UnitTestCase {
+class Test_Feed_Atom extends WP_UnitTestCase {
 
 	/**
 	 * Capture output from a callback.
@@ -23,28 +23,6 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 	private function capture_output( callable $callback ): string {
 		ob_start();
 		$callback();
-		return (string) ob_get_clean();
-	}
-
-	/**
-	 * Render the real core RSS2 template body with headers bypassed.
-	 *
-	 * WordPress's feed template calls header() before output, which conflicts
-	 * with the PHPUnit bootstrap output. Strip that single line so the rest of
-	 * the real template can render unchanged for additive-behavior assertions.
-	 *
-	 * @return string
-	 */
-	private function render_rss2_template_body(): string {
-		$template_path = ABSPATH . WPINC . '/feed-rss2.php';
-		$template      = file_get_contents( $template_path );
-
-		$this->assertIsString( $template );
-
-		$template = preg_replace( "/^header\\(.*?\\);\\n/m", '', $template, 1 );
-
-		ob_start();
-		eval( '?>' . $template );
 		return (string) ob_get_clean();
 	}
 
@@ -61,7 +39,7 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Set current global post used by output_item().
+	 * Set current global post used by output_entry().
 	 *
 	 * @param int $post_id Post ID.
 	 */
@@ -74,6 +52,8 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 
 	public function tear_down(): void {
 		remove_all_filters( 'byline_feed_authors' );
+		remove_all_filters( 'byline_feed_person_xml' );
+		remove_all_filters( 'byline_feed_item_xml' );
 		wp_reset_postdata();
 		parent::tear_down();
 	}
@@ -92,14 +72,18 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 	}
 
 	public function test_contributors_block_present(): void {
-		$user_id = self::factory()->user->create( array(
-			'display_name' => 'Test Author',
-		) );
+		$user_id = self::factory()->user->create(
+			array(
+				'display_name' => 'Atom Author',
+			)
+		);
 
-		$post_id = self::factory()->post->create( array(
-			'post_author' => $user_id,
-			'post_status' => 'publish',
-		) );
+		$post_id = self::factory()->post->create(
+			array(
+				'post_author' => $user_id,
+				'post_status' => 'publish',
+			)
+		);
 
 		$this->set_feed_posts( array( $post_id ) );
 
@@ -110,38 +94,43 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 		);
 
 		$this->assertStringContainsString( '<byline:contributors>', $feed );
-		$this->assertStringContainsString( '</byline:contributors>', $feed );
 		$this->assertStringContainsString( '<byline:person', $feed );
-		$this->assertStringContainsString( '<byline:name>Test Author</byline:name>', $feed );
+		$this->assertStringContainsString( '<byline:name>Atom Author</byline:name>', $feed );
 	}
 
-	public function test_item_author_ref_present(): void {
-		$user_id = self::factory()->user->create( array(
-			'user_nicename' => 'test-author',
-		) );
+	public function test_entry_author_ref_present(): void {
+		$user_id = self::factory()->user->create(
+			array(
+				'user_nicename' => 'atom-author',
+			)
+		);
 
-		$post_id = self::factory()->post->create( array(
-			'post_author' => $user_id,
-			'post_status' => 'publish',
-		) );
+		$post_id = self::factory()->post->create(
+			array(
+				'post_author' => $user_id,
+				'post_status' => 'publish',
+			)
+		);
 
 		$this->set_current_post( $post_id );
 
 		$feed = $this->capture_output(
 			static function () {
-				output_item();
+				output_entry();
 			}
 		);
 
-		$this->assertStringContainsString( '<byline:author ref="test-author"/>', $feed );
+		$this->assertStringContainsString( '<byline:author ref="atom-author"/>', $feed );
 	}
 
-	public function test_perspective_in_feed_when_set(): void {
+	public function test_perspective_in_entry_when_set(): void {
 		$user_id = self::factory()->user->create();
-		$post_id = self::factory()->post->create( array(
-			'post_author' => $user_id,
-			'post_status' => 'publish',
-		) );
+		$post_id = self::factory()->post->create(
+			array(
+				'post_author' => $user_id,
+				'post_status' => 'publish',
+			)
+		);
 
 		update_post_meta( $post_id, '_byline_perspective', 'analysis' );
 
@@ -149,7 +138,7 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 
 		$feed = $this->capture_output(
 			static function () {
-				output_item();
+				output_entry();
 			}
 		);
 
@@ -159,60 +148,11 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_no_perspective_when_unset(): void {
-		$user_id = self::factory()->user->create();
-		$post_id = self::factory()->post->create( array(
-			'post_author' => $user_id,
-			'post_status' => 'publish',
-		) );
-
-		$this->set_current_post( $post_id );
-
-		$feed = $this->capture_output(
-			static function () {
-				output_item();
-			}
-		);
-
-		$this->assertStringNotContainsString( '<byline:perspective>', $feed );
-	}
-
-	public function test_feed_is_well_formed_xml(): void {
-		$user_id = self::factory()->user->create( array(
-			'display_name' => 'XML Test Author',
-		) );
-
-		$post_id = self::factory()->post->create( array(
-			'post_author' => $user_id,
-			'post_status' => 'publish',
-		) );
-
-		$this->set_feed_posts( array( $post_id ) );
-		$this->set_current_post( $post_id );
-
-		$contributors = $this->capture_output(
-			static function () {
-				output_contributors();
-			}
-		);
-
-		$item = $this->capture_output(
-			static function () {
-				output_item();
-			}
-		);
-
-		$feed = '<rss xmlns:byline="https://bylinespec.org/1.0"><channel>' . $contributors . '<item>' . $item . '</item></channel></rss>';
-		$xml  = simplexml_load_string( $feed );
-
-		$this->assertNotFalse( $xml, 'Feed output must be well-formed XML.' );
-	}
-
 	public function test_contributors_are_deduplicated_across_posts(): void {
 		$user_id = self::factory()->user->create(
 			array(
-				'display_name'  => 'Shared Author',
-				'user_nicename' => 'shared-author',
+				'display_name'  => 'Shared Atom Author',
+				'user_nicename' => 'shared-atom-author',
 			)
 		);
 
@@ -239,10 +179,10 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 			}
 		);
 
-		$this->assertSame( 1, substr_count( $feed, '<byline:person id="shared-author">' ) );
+		$this->assertSame( 1, substr_count( $feed, '<byline:person id="shared-atom-author">' ) );
 	}
 
-	public function test_item_outputs_multiple_author_refs_when_filtered_authors_present(): void {
+	public function test_entry_outputs_multiple_author_refs_when_filtered_authors_present(): void {
 		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
 		$this->set_current_post( $post_id );
 
@@ -251,8 +191,8 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 			static function () {
 				return array(
 					(object) array(
-						'id'           => 'author-one',
-						'display_name' => 'Author One',
+						'id'           => 'atom-one',
+						'display_name' => 'Atom One',
 						'description'  => '',
 						'url'          => '',
 						'avatar_url'   => '',
@@ -266,8 +206,8 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 						'ai_consent'   => '',
 					),
 					(object) array(
-						'id'           => 'author-two',
-						'display_name' => 'Author Two',
+						'id'           => 'atom-two',
+						'display_name' => 'Atom Two',
 						'description'  => '',
 						'url'          => '',
 						'avatar_url'   => '',
@@ -286,16 +226,16 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 
 		$feed = $this->capture_output(
 			static function () {
-				output_item();
+				output_entry();
 			}
 		);
 
 		$this->assertSame( 2, substr_count( $feed, '<byline:author ref="' ) );
-		$this->assertStringContainsString( '<byline:author ref="author-one"/>', $feed );
-		$this->assertStringContainsString( '<byline:author ref="author-two"/>', $feed );
+		$this->assertStringContainsString( '<byline:author ref="atom-one"/>', $feed );
+		$this->assertStringContainsString( '<byline:author ref="atom-two"/>', $feed );
 	}
 
-	public function test_person_omits_empty_optional_fields(): void {
+	public function test_contributors_omit_empty_optional_fields(): void {
 		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
 		$this->set_feed_posts( array( $post_id ) );
 
@@ -304,8 +244,8 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 			static function () {
 				return array(
 					(object) array(
-						'id'           => 'minimal-author',
-						'display_name' => 'Minimal Author',
+						'id'           => 'minimal-atom-author',
+						'display_name' => 'Minimal Atom Author',
 						'description'  => '',
 						'url'          => '',
 						'avatar_url'   => '',
@@ -333,11 +273,10 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( '<byline:avatar>', $feed );
 	}
 
-	public function test_full_rss2_template_preserves_dc_creator_alongside_byline_output(): void {
+	public function test_atom_output_is_well_formed_xml(): void {
 		$user_id = self::factory()->user->create(
 			array(
-				'display_name'  => 'Template Author',
-				'user_nicename' => 'template-author',
+				'display_name' => 'Atom XML Author',
 			)
 		);
 
@@ -345,16 +284,79 @@ class Test_Feed_RSS2 extends WP_UnitTestCase {
 			array(
 				'post_author' => $user_id,
 				'post_status' => 'publish',
-				'post_title'  => 'Template Test Post',
 			)
 		);
 
-		$this->go_to( '/?feed=rss2&p=' . $post_id );
+		$this->set_feed_posts( array( $post_id ) );
+		$this->set_current_post( $post_id );
 
-		$feed = $this->render_rss2_template_body();
+		$contributors = $this->capture_output(
+			static function () {
+				output_contributors();
+			}
+		);
 
-		$this->assertStringContainsString( '<dc:creator><![CDATA[Template Author]]></dc:creator>', $feed );
-		$this->assertStringContainsString( '<byline:author ref="template-author"/>', $feed );
-		$this->assertStringContainsString( '<byline:contributors>', $feed );
+		$entry = $this->capture_output(
+			static function () {
+				output_entry();
+			}
+		);
+
+		$feed = '<feed xmlns:byline="https://bylinespec.org/1.0">' . $contributors . '<entry>' . $entry . '</entry></feed>';
+		$xml  = simplexml_load_string( $feed );
+
+		$this->assertNotFalse( $xml, 'Atom output must be well-formed XML.' );
+	}
+
+	public function test_person_xml_filter_applies_to_atom_contributors(): void {
+		$user_id = self::factory()->user->create(
+			array(
+				'display_name' => 'Filtered Atom Author',
+			)
+		);
+
+		$post_id = self::factory()->post->create(
+			array(
+				'post_author' => $user_id,
+				'post_status' => 'publish',
+			)
+		);
+
+		$this->set_feed_posts( array( $post_id ) );
+
+		add_filter(
+			'byline_feed_person_xml',
+			static function ( string $xml ): string {
+				return $xml . "\t\t\t<byline:test>yes</byline:test>\n";
+			}
+		);
+
+		$feed = $this->capture_output(
+			static function () {
+				output_contributors();
+			}
+		);
+
+		$this->assertStringContainsString( '<byline:test>yes</byline:test>', $feed );
+	}
+
+	public function test_item_xml_filter_applies_to_atom_entries(): void {
+		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+		$this->set_current_post( $post_id );
+
+		add_filter(
+			'byline_feed_item_xml',
+			static function ( string $xml ): string {
+				return $xml . "\t\t<byline:test-entry>yes</byline:test-entry>\n";
+			}
+		);
+
+		$feed = $this->capture_output(
+			static function () {
+				output_entry();
+			}
+		);
+
+		$this->assertStringContainsString( '<byline:test-entry>yes</byline:test-entry>', $feed );
 	}
 }

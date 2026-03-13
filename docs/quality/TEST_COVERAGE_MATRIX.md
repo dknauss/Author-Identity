@@ -25,26 +25,26 @@
 | Core adapter — single author resolution | **Covered** | `test-adapter-core.php` | Happy path, role mapping, zero-value fields. |
 | Core adapter — invalid/missing author | **Covered** | `test-adapter-core.php` | Returns empty array for user ID 0. |
 | Core adapter — role mapping | **Covered** | `test-adapter-core.php` | Editor → staff, Author → contributor. |
-| CAP adapter — mixed user/guest authors | **Gap** | Missing file | `test-adapter-cap.php` does not exist. |
-| CAP adapter — guest author detection | **Gap** | Missing file | No coverage. |
-| CAP adapter — author ordering | **Gap** | Missing file | No coverage. |
-| PPA adapter — term meta resolution | **Gap** | Missing file | `test-adapter-ppa.php` does not exist. |
-| PPA adapter — linked user fallback | **Gap** | Missing file | No coverage. |
-| PPA adapter — guest author handling | **Gap** | Missing file | No coverage. |
-| Adapter contract validation | **Gap** | No file | No enforcement of normalized object shape. |
+| CAP adapter — mixed user/guest authors | **Covered** | `test-adapter-cap.php` | Normalization covered for both WP user and guest author objects. |
+| CAP adapter — guest author detection | **Covered** | `test-adapter-cap.php` | Guest objects map to `role=guest`, `is_guest=true`, and `user_id=0`. |
+| CAP adapter — author ordering | **Partial** | `test-adapter-cap.php` | Normalization covered; `get_coauthors()` ordering path still needs a function-level integration test. |
+| PPA adapter — term meta resolution | **Covered** | `test-adapter-ppa.php` | Term meta description/avatar mapping verified. |
+| PPA adapter — linked user fallback | **Covered** | `test-adapter-ppa.php` | Fallback to linked user profile when term meta is missing is verified. |
+| PPA adapter — guest author handling | **Covered** | `test-adapter-ppa.php` | Guest object mapping (`role=guest`, no user-linked fields) is verified. |
+| Adapter contract validation | **Covered** | `test-author-contract.php` | Invalid entries are dropped and optional fields are normalized before output layers consume author data. |
 | RSS2 namespace declaration | **Covered** | `test-feed-rss2.php` | Verifies `xmlns:byline` present. |
 | RSS2 contributors block | **Covered** | `test-feed-rss2.php` | Verifies `<byline:person>` in channel head. |
 | RSS2 per-item author refs | **Covered** | `test-feed-rss2.php` | Verifies `<byline:author ref>` matches contributor. |
 | RSS2 perspective output | **Covered** | `test-feed-rss2.php` | Present when set, absent when unset. |
 | RSS2 well-formed XML | **Covered** | `test-feed-rss2.php` | XML parse succeeds. |
 | RSS2 profile/now/uses elements | **Gap** | `test-feed-rss2.php` | Elements not implemented in `output_person()`. |
-| RSS2 multi-author per item | **Gap** | `test-feed-rss2.php` | No test for multiple `<byline:author>` on one item. |
-| RSS2 standard elements preserved | **Gap** | `test-feed-rss2.php` | No test that `<author>` / `<dc:creator>` survive. |
-| RSS2 empty-field omission | **Gap** | `test-feed-rss2.php` | No test that empty optional fields produce no elements. |
-| Atom namespace declaration | **Gap** | Missing file | `test-feed-atom.php` does not exist. |
-| Atom contributors block | **Gap** | Missing file | No coverage. |
-| Atom per-entry author refs | **Gap** | Missing file | No coverage. |
-| Atom filter parity with RSS2 | **Gap** | Missing file | Atom layer has no extensibility hooks. |
+| RSS2 multi-author per item | **Covered** | `test-feed-rss2.php` | Verifies multiple `<byline:author>` refs are emitted when multiple normalized authors are present. |
+| RSS2 standard elements preserved | **Covered** | `test-feed-rss2.php` | Template-level render verifies core `dc:creator` survives alongside Byline output. |
+| RSS2 empty-field omission | **Covered** | `test-feed-rss2.php` | Verifies empty optional person fields do not emit context/url/avatar elements. |
+| Atom namespace declaration | **Covered** | `test-feed-atom.php` | Verifies `xmlns:byline` present. |
+| Atom contributors block | **Covered** | `test-feed-atom.php` | Verifies `<byline:person>` output in feed head. |
+| Atom per-entry author refs | **Covered** | `test-feed-atom.php` | Verifies `<byline:author ref>` output for entries, including multi-author cases. |
+| Atom filter parity with RSS2 | **Covered** | `test-feed-atom.php` | Atom contributors and entry output now honor the same person/item XML filters as RSS2. |
 | Perspective — valid value accepted | **Covered** | `test-perspective.php` | All 12 allowed values pass. |
 | Perspective — invalid value rejected | **Covered** | `test-perspective.php` | Returns empty string. |
 | Perspective — filter override | **Covered** | `test-perspective.php` | Filter can replace value. |
@@ -71,11 +71,11 @@
 
 1. ~~**Create `phpunit.xml.dist` and test bootstrap.**~~ Done — `phpunit.xml.dist`, `tests/phpunit/bootstrap.php`, `bin/install-wp-tests.sh`.
 2. ~~**Create `.github/workflows/ci.yml`.**~~ Done — PHPUnit matrix, PHPCS, Node build jobs.
-3. **Write `test-adapter-cap.php`.** The CAP adapter is the most widely-used adapter path and has zero coverage.
-4. **Write `test-adapter-ppa.php`.** Same rationale — second most common adapter path.
-5. **Write `test-feed-atom.php`.** Atom output has zero coverage.
-6. **Add RSS2 tests for multi-author, standard-element preservation, and empty-field omission.** These are spec-required scenarios with no test.
-7. **Add adapter contract validation tests.** Verify that malformed objects are caught before reaching output.
+3. ~~**Write `test-adapter-cap.php`.**~~ Done — normalization coverage added for user+guest CAP objects.
+4. ~~**Write `test-adapter-ppa.php`.**~~ Done — normalization coverage added for term-meta, user-fallback, and guest paths.
+5. ~~**Write `test-feed-atom.php`.**~~ Done — Atom namespace, contributors, entry refs, perspective, omission, and XML coverage added.
+6. ~~**Add an RSS2 template-level preservation test for standard feed elements.**~~ Done — full template render now verifies `dc:creator` survives alongside Byline output.
+7. ~~**Add adapter contract validation tests.**~~ Done — malformed entries are now rejected before feed rendering.
 8. ~~**Run `npm run build` and verify perspective panel loads.**~~ CI job added and local build command is part of baseline verification.
 
 ## Quality target
@@ -88,6 +88,6 @@
 ## Related documents
 
 - [ASSESSMENT.md](ASSESSMENT.md) — Project assessment
-- [Implementation Strategy/gap-analysis.md](Implementation%20Strategy/gap-analysis.md) — Detailed gap audit
+- [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md) — Detailed gap audit
 - [TDD_TESTING_STANDARD.md](TDD_TESTING_STANDARD.md) — Testing protocol
-- [Implementation Strategy/implementation-spec.md](Implementation%20Strategy/implementation-spec.md) — Test strategy and testing matrix
+- [Implementation Strategy/implementation-spec.md](../../Implementation%20Strategy/implementation-spec.md) — Test strategy and testing matrix
