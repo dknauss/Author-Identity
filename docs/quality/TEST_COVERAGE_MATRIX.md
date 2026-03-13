@@ -49,7 +49,7 @@
 | Perspective — invalid value rejected | **Covered** | `test-perspective.php` | Returns empty string. |
 | Perspective — filter override | **Covered** | `test-perspective.php` | Filter can replace value. |
 | Perspective — empty when unset | **Covered** | `test-perspective.php` | No meta returns empty. |
-| Perspective — block editor panel | **Gap** | No test | TSX never built; no browser or integration test. |
+| Perspective — block editor panel | **Gap** | No test | Asset builds successfully, but there is still no browser or integration test for editor behavior. |
 
 ## Core domains — Post-MVP (WP-04/05/06)
 

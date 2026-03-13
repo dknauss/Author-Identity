@@ -304,7 +304,7 @@ The following concerns span multiple work packages. They are not separate delive
 
 **Applies to:** All work packages.
 
-The plugin has no CI pipeline. This is the single highest-priority infrastructure gap. Without CI, every commit is a manual verification burden.
+The plugin now has a CI pipeline. The remaining question is coverage depth, not whether CI exists. Without deeper integration jobs, upstream plugin drift and editor regressions can still escape notice.
 
 **GitHub Actions workflow** (`.github/workflows/ci.yml`):
 
@@ -314,7 +314,7 @@ The plugin has no CI pipeline. This is the single highest-priority infrastructur
 - **Node build:** `npm ci && npm run build` to verify `perspective-panel.tsx` compiles.
 - **Integration test jobs:** Separate CI jobs that install Co-Authors Plus and PublishPress Authors as test dependencies, then run the adapter and feed output tests against real plugin APIs (see § Adapter validation below).
 
-The CI workflow should be created before any further work packages are developed. Every PR must pass CI. The workflow file is part of the plugin's infrastructure, not a work package deliverable — it enables everything else.
+The CI workflow now exists and every PR should continue to pass it. The next step is to deepen it with integration scenarios rather than rebuilding the basics.
 
 **File:** `.github/workflows/ci.yml`
 
@@ -386,7 +386,7 @@ function validate_author_object( object $author ): object {
 
 This runs in `byline_feed_get_authors()` after the adapter returns and before the `byline_feed_authors` filter fires. In development/debug mode (`WP_DEBUG === true`), it emits `_doing_it_wrong` notices for missing required fields. In production, it silently applies defaults for optional fields so output never breaks.
 
-This is not a separate work package — it's a hardening pass on WP-01's public API. Future adapter authors (Molongui, HM Authorship, or third-party) get immediate feedback when their adapter returns malformed data.
+This hardening pass is now implemented in the plugin. Future adapter authors (Molongui, HM Authorship, or third-party) still need to satisfy the same contract and should be covered by the same validation and tests.
 
 **Files:** `inc/namespace.php` (add validation), `tests/phpunit/test-adapter-contract.php` (new — tests that intentionally malformed objects are caught).
 
@@ -394,7 +394,7 @@ This is not a separate work package — it's a hardening pass on WP-01's public 
 
 **Applies to:** WP-02 (RSS2/Atom output).
 
-The existing feed tests check XML well-formedness and structural expectations (namespace present, contributors block exists, item refs match). They do not validate output against the Byline specification itself.
+The existing feed tests now cover XML well-formedness, namespace presence, contributor and item structures, additive preservation of core elements, optional-field omission, hook parity, and author-contract handling. What remains is deeper Byline-spec conformance and round-trip parsing validation.
 
 **Validation approach:**
 
@@ -443,22 +443,22 @@ A shorter document covering:
 
 ## Delivery schedule
 
-Based on the [gap analysis](gap-analysis.md) — what exists, what's missing, and what the gaps require. Estimates assume one developer working on this as a focused project.
+Based on the [gap analysis](gap-analysis.md) — what exists, what remains, and what the remaining gaps require. Estimates assume one developer working on this as a focused project.
 
 ### ETA by deliverable
 
 | Deliverable | Status | Remaining work | Estimate | Depends on |
 | --- | --- | --- | --- | --- |
-| **CI pipeline** | 0% | GitHub Actions workflow, phpunit.xml.dist, test bootstrap, bin/install-wp-tests.sh | 1–2 days | — |
-| **WP-01 completion** | ~75% | Missing test files (CAP, PPA), role mapping alignment, adapter contract validation function | 3–4 days | CI |
-| **WP-02 completion** | ~80% | Add profile/now/uses output, Atom filter parity, Atom tests, round-trip feed validation, additional RSS2 test scenarios | 2–3 days | WP-01 |
-| **WP-03 completion** | ~90% | Deduplicate allowed-values list, update panel labels, run npm build, verify block editor panel loads | 1 day | WP-01, WP-02 |
-| **Gate A: MVP quality** | — | All of the above, plus PHPCS pass, manual QA on WP 6.0+ with CAP and PPA | 1–2 days | WP-01/02/03 |
+| **CI pipeline** | Implemented | Add real-plugin integration jobs and keep matrix current | 1–2 days | — |
+| **WP-01 completion** | Implemented | Ongoing compatibility maintenance only | — | CI |
+| **WP-02 completion** | Implemented | Optional deeper Byline-spec conformance checks | 1–2 days | WP-01 |
+| **WP-03 completion** | Implemented | Editor-specific QA or browser automation | 1 day | WP-01, WP-02 |
+| **Gate A: MVP quality** | Achieved in current repo state | Maintain green CI and manual QA against supported environments | Ongoing | WP-01/02/03 |
 | **Output reference doc** | 0% | Annotated RSS2/Atom examples, element reference table, filter reference | 2–3 days | Gate A |
-| **CONTRIBUTING.md** | 0% | Dev setup, test commands, adapter template | 1 day | CI |
+| **CONTRIBUTING.md** | Repository-level doc exists | Add plugin-local quick-start only if needed | 0.5–1 day | CI |
 | **wp.org submission** | — | Readme review, plugin check, screenshots, initial release | 1–2 days | Gate A |
 | | | | | |
-| **WP-04: fediverse:creator** | ~0% | Meta registration, user profile field, wp_head output, handle normalization, tests | 3–4 days | WP-01 |
+| **WP-04: fediverse:creator** | 0% | Meta registration, user profile field, `wp_head` output, handle normalization, tests | 3–4 days | WP-01 |
 | **WP-05: JSON-LD schema** | 0% | Article+Person schema, sameAs from profiles, Yoast/Rank Math detection, tests | 4–5 days | WP-01 |
 | **WP-06: AI consent** | 0% | Per-author/per-post consent, resolution logic, HTML/header output, ai.txt, user/post UI, audit logging, tests | 6–8 days | WP-01 |
 | **Gate B': adapter-proven expansion** | — | WP-04 + WP-05 + WP-06 HTML/header signals shipped | After Gate A | WP-04/05/06 |
@@ -468,6 +468,10 @@ Based on the [gap analysis](gap-analysis.md) — what exists, what's missing, an
 
 | Milestone | Cumulative estimate |
 | --- | --- |
+| **Current repo state** | Gate A quality baseline reached |
+| **WP-04** | +3–4 days |
+| **WP-05** | +7–9 days total |
+| **WP-06** | +13–17 days total |
 | **CI green + WP-01 complete** | ~1 week |
 | **MVP code complete** (WP-01/02/03 + tests passing) | ~2.5 weeks |
 | **wp.org submission ready** (Gate A + docs + submission prep) | ~3.5 weeks |

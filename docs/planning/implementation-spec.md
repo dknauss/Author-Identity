@@ -229,7 +229,7 @@ The following concerns span multiple work packages. They are not separate delive
 
 ### 1. Continuous integration
 
-**Applies to:** All work packages. The plugin has no CI pipeline. A GitHub Actions workflow running PHPUnit (across a PHP 7.4–8.3 / WP 6.0–latest matrix), PHPCS, and the `@wordpress/scripts` build is the single highest-priority infrastructure gap. CI must exist before further work packages are developed. Separate integration test jobs should install Co-Authors Plus and PublishPress Authors as test dependencies.
+**Applies to:** All work packages. The plugin now has a GitHub Actions workflow running PHPUnit (across the supported PHP/WP matrix), PHPCS, and the `@wordpress/scripts` build. The remaining CI gap is not existence but depth: separate integration jobs should install Co-Authors Plus and PublishPress Authors as test dependencies and exercise the adapters against real plugin code.
 
 ### 2. Adapter validation against real plugins
 
@@ -237,7 +237,7 @@ The following concerns span multiple work packages. They are not separate delive
 
 ### 3. Adapter contract enforcement
 
-**Applies to:** WP-01. The `Adapter` interface's prose contract (the normalized author object shape) is not enforced in code. A validation function in `byline_feed_get_authors()` that checks required fields and applies zero-value defaults for optional fields — using `_doing_it_wrong()` in debug mode — catches malformed adapter output before it reaches feed/schema/meta output layers. This is a hardening pass, not a separate work package.
+**Applies to:** WP-01. The adapter contract is now validated in `byline_feed_get_authors()`, with invalid entries surfaced through the plugin's validation hook and optional fields normalized to zero values. The remaining work here is maintenance: keep new adapters and future fields aligned with the same contract and test expectations.
 
 ### 4. Feed output validation against the Byline spec
 
@@ -245,7 +245,7 @@ The following concerns span multiple work packages. They are not separate delive
 
 ### 5. Consumer documentation — output reference
 
-**Applies to:** Adoption strategy. The plugin needs a consumer-facing output reference (`byline-feed/docs/output-reference.md`) with annotated RSS2, Atom, JSON-LD, and HTML head examples showing every element the plugin produces and how to customize each via filters. This is separate from contributor docs (`CONTRIBUTING.md` with dev environment setup, test commands, and adapter development guide).
+**Applies to:** Adoption strategy. The plugin still needs a consumer-facing output reference (`byline-feed/docs/output-reference.md`) with annotated RSS2, Atom, JSON-LD, and HTML head examples showing every element the plugin produces and how to customize each via filters. Repository-level contributor guidance now exists; this remaining document is specifically for integrators and downstream consumers.
 
 ---
 
@@ -257,4 +257,4 @@ Summary: ~3.5 weeks to wp.org submission (Gate A), ~7–8 weeks total for all wo
 
 ## Gap analysis
 
-For a point-in-time audit of what exists vs. what the specs require, see [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md). Key findings: 11 gaps identified (3 critical, 5 spec divergences, 3 structural), with resolution priorities mapped to work packages.
+For the current audit of what still remains vs. what the specs require, see [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md). The major remaining items are WP-04/05/06 implementation, real-plugin CI validation, editor-level verification, and the consumer-facing output reference.

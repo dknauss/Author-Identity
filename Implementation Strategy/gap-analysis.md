@@ -1,114 +1,87 @@
 # Gap Analysis — Byline Feed Plugin
 
-**Date:** March 2026
-**Scope:** Audit of all existing plugin code against work package specifications (WP-01 through WP-06) and cross-cutting concerns.
-**Method:** File-by-file comparison of `byline-feed/` contents against [implementation-spec.md](../docs/planning/implementation-spec.md) and individual work package specs.
+**Date:** March 2026  
+**Scope:** Current audit of `byline-feed/` against the work package specifications (WP-01 through WP-06) and cross-cutting concerns.  
+**Method:** File-by-file comparison of the shipped plugin, tests, CI, and governance docs against [implementation-spec.md](../docs/planning/implementation-spec.md) and the individual work package specs.
 
 ---
 
 ## Work package status summary
 
-| Work Package | Code exists | Tests exist | % Complete | Quality |
+| Work Package | Code exists | Tests exist | Status | Quality |
 | --- | --- | --- | --- | --- |
-| WP-01: Scaffold & Adapters | All 6 files | 1 of 3 test files | ~75% | Production-ready |
-| WP-02: RSS2 & Atom Output | Both files | 1 of 2 test files | ~80% | Production-ready |
-| WP-03: Perspective Field | Both files (PHP + TSX) | 1 of 1 test files | ~90% | Production-ready |
-| WP-04: fediverse:creator | None | None | ~0% | N/A |
-| WP-05: JSON-LD Schema | None | None | 0% | N/A |
-| WP-06: Rights & AI Consent | None | None | ~0% | N/A |
+| WP-01: Scaffold & Adapters | All planned files | Core, CAP, PPA, contract tests | Implemented | CI-verified |
+| WP-02: RSS2 & Atom Output | Both planned files | RSS2 + Atom tests | Implemented | CI-verified |
+| WP-03: Perspective Field | PHP + TSX present | PHPUnit coverage for feed output | Implemented | Built locally, needs ongoing editor QA |
+| WP-04: fediverse:creator | None | None | Not started | N/A |
+| WP-05: JSON-LD Schema | None | None | Not started | N/A |
+| WP-06: Rights & AI Consent | None | None | Not started | N/A |
 
 ---
 
-## Missing files
+## Remaining missing files
 
-Files specified in the implementation spec that do not exist:
+Files still planned by the implementation strategy that do not yet exist:
 
 | File | Work package | Impact |
 | --- | --- | --- |
-| `tests/phpunit/test-adapter-cap.php` | WP-01 | CAP adapter has zero test coverage |
-| `tests/phpunit/test-adapter-ppa.php` | WP-01 | PPA adapter has zero test coverage |
-| `tests/phpunit/test-feed-atom.php` | WP-02 | Atom output has zero test coverage |
-| `inc/fediverse.php` | WP-04 | No fediverse:creator output |
-| `inc/schema.php` | WP-05 | No JSON-LD output |
-| `inc/rights.php` | WP-06 | No AI consent/rights output |
-| `tests/phpunit/test-fediverse.php` | WP-04 | N/A (no code to test) |
-| `tests/phpunit/test-schema.php` | WP-05 | N/A (no code to test) |
-| `tests/phpunit/test-rights.php` | WP-06 | N/A (no code to test) |
-| `phpunit.xml.dist` | All | Test suite cannot run |
-| `.github/workflows/ci.yml` | All | No CI pipeline |
+| `inc/fediverse.php` | WP-04 | No `fediverse:creator` output yet |
+| `inc/schema.php` | WP-05 | No JSON-LD article/person graph output yet |
+| `inc/rights.php` | WP-06 | No rights / TDM / consent output yet |
+| `tests/phpunit/test-fediverse.php` | WP-04 | No automated coverage for fediverse output |
+| `tests/phpunit/test-schema.php` | WP-05 | No automated coverage for JSON-LD output |
+| `tests/phpunit/test-rights.php` | WP-06 | No automated coverage for rights output |
+| `byline-feed/docs/output-reference.md` | Adoption / consumer docs | No consumer-facing output reference yet |
+| `byline-feed/CONTRIBUTING.md` | Contributor docs | No plugin-local contributor quick-start yet |
 
 ---
 
-## Critical gaps
+## Current gaps
 
-These would block a real wp.org submission.
+These are the meaningful remaining gaps after WP-01/WP-02 completion.
 
-### 1. Test suite cannot run
+### 1. WP-04, WP-05, and WP-06 are still entirely unimplemented
 
-There is no `phpunit.xml.dist`, no test bootstrap, and no WordPress test harness setup script (`bin/install-wp-tests.sh`). The three existing test files extend `WP_UnitTestCase` but there is no infrastructure to execute them. `composer test` would fail immediately.
+The adapter layer already normalizes `fediverse` and `ai_consent` fields, but there is no user UI, meta registration, front-end output, or tests for fediverse attribution, JSON-LD, or rights/consent handling. The roadmap is still front-loaded around feeds and perspective only.
 
-### 2. Block editor panel has never been built
+### 2. Real-plugin validation is manual, not automated
 
-`src/perspective-panel.tsx` exists but `npm install` and `npm run build` have never been run. There is no `build/` directory and no compiled JavaScript. The perspective sidebar panel would not load on a real WordPress installation.
+CAP and PPA now have PHPUnit coverage and were manually verified against a local Studio WordPress site, but CI still does not install real copies of those plugins and run integration jobs against them. That leaves version-drift risk in upstream plugin APIs.
 
-### 3. Two of three adapter test files are missing
+### 3. WP-03 needs stronger editor-specific verification
 
-`test-adapter-cap.php` and `test-adapter-ppa.php` don't exist. The Co-Authors Plus and PublishPress Authors adapters — the two adapters that justify the plugin's existence beyond core WordPress — have zero test coverage.
+The perspective feature builds successfully and its feed output is tested, but block-editor behavior is not covered by browser or end-to-end tests. Regressions in panel registration, UI labels, or save behavior would currently be caught only by manual testing.
 
----
+### 4. Consumer-facing output documentation is still missing
 
-## Spec divergences
-
-Code exists but doesn't match what the work package specifications say it should do.
-
-### 4. RSS2 output is missing three Byline elements
-
-The WP-02 spec calls for `<byline:profile>`, `<byline:now>`, and `<byline:uses>` inside `<byline:person>`. The `output_person()` function in `feed-rss2.php` outputs `<byline:name>`, `<byline:context>`, `<byline:url>`, and `<byline:avatar>` but never renders profile links, `/now` URLs, or `/uses` URLs — even though the normalized author objects carry that data in `profiles`, `now_url`, and `uses_url` fields.
-
-### 5. Atom output lacks filter parity with RSS2
-
-RSS2 has four extensibility hooks: `byline_feed_person_xml`, `byline_feed_item_xml`, `byline_feed_after_rss2_contributors`, and `byline_feed_after_rss2_item`. The Atom layer has no parallel hooks. A developer extending the RSS2 output would find the Atom output non-extensible.
-
-### 6. Perspective allowed-values list is duplicated
-
-`inc/perspective.php` defines `get_allowed_values()` and `sanitize_perspective()`. `inc/namespace.php` has its own inline `$allowed` array in `byline_feed_get_perspective()`. If the Byline spec adds a perspective value, it must be updated in two places.
-
-### 7. Role mapping function signature differs from spec
-
-The WP-01 spec defines `byline_feed_map_role( \WP_User $user, \WP_Post $post = null )` with the filter receiving `( $role, $user, $post )`. The implementation uses `get_byline_role_from_user( ?\WP_User $user )` — different name, no `$post` parameter, and the filter receives `( $role, $coauthor_object, null )` with a different second argument type.
-
-### 8. Perspective panel labels don't match spec
-
-The TSX uses simple labels ("Personal", "Reporting", "Analysis") while the WP-03 spec calls for descriptive labels ("Personal / Opinion", "News Reporting", "Analysis / Commentary"). Minor, but it's a divergence.
+The repository now has contributor/process guidance, but it still lacks the plugin output reference described in the implementation strategy: annotated RSS2, Atom, JSON-LD, and HTML-head examples with filter reference and field mapping.
 
 ---
 
-## Structural gaps
+## Structural notes
 
-Things the plan didn't fully account for, or where implementation assumptions don't hold.
+These are not code defects, but they affect execution strategy.
 
-### 9. WP-04, WP-05, and WP-06 are entirely absent
+### 5. Remaining security advisories are development-tooling only
 
-The adapter layer reads `byline_feed_fediverse` and `byline_feed_ai_consent` from user meta, but neither meta key is registered via `register_meta()`, neither has a UI, and neither produces any output. These three work packages have 0% implementation.
+The high-severity npm advisories were resolved. The remaining open Dependabot alerts are moderate `webpack-dev-server` advisories inherited through the current `@wordpress/scripts` toolchain. They affect development tooling, not the shipped plugin runtime, and should be tracked as upstream risk unless the build stack is deliberately changed.
 
-### 10. Atom output duplicates RSS2 person-rendering logic
+### 6. Release discipline now exists, but needs consistent use
 
-`feed-atom.php` contains its own `output_contributors()` that duplicates `feed-rss2.php`'s `output_person()` logic inline rather than sharing a common rendering function. If the person XML format changes, both files must be updated independently.
-
-### 11. No CI exists
-
-No `.github/workflows/ci.yml`. No automation of any kind. Already addressed in [cross-cutting concern #1](../docs/planning/implementation-spec.md#1-continuous-integration) but confirmed by the audit.
+The repository now has `CHANGELOG.md`, `RELEASE_NOTES.md`, issue templates, a PR template, and contributor guidance. The remaining gap is procedural: future releases should consistently update the changelog and apply the release-note convention when AI assistance materially shaped the release.
 
 ---
 
-## What's NOT a gap
+## What's no longer a gap
 
-Things that look incomplete but are correctly deferred by the spec:
+The following items appeared in earlier audits but are now resolved:
 
-- **Molongui and HM Authorship adapters missing:** WP-01 spec explicitly defers these to a later work package. The interface and detection logic accommodate them.
-- **Conditional output module loading:** The WP-01 spec mentions this but it's premature optimization at 0.1.0-dev. Loading all modules unconditionally is correct for now.
-- **No `tsconfig.json`:** `@wordpress/scripts` handles TypeScript compilation internally. A separate tsconfig is optional.
-- **No `build/` directory committed:** Build artifacts should not be in version control. The gap is that the build has never been *run*, not that the artifacts are missing from git.
+- PHPUnit infrastructure is present (`phpunit.xml.dist`, bootstrap, install script).
+- GitHub Actions CI exists and runs PHPCS, PHPUnit, and the Node build.
+- CAP, PPA, RSS2, Atom, and author-contract tests exist and pass in CI.
+- Atom now has filter parity with RSS2.
+- The perspective panel builds successfully.
+- Public-repo governance files are present and tracked.
 
 ---
 
@@ -116,11 +89,10 @@ Things that look incomplete but are correctly deferred by the spec:
 
 | Priority | Gaps | Rationale |
 | --- | --- | --- |
-| **Before any further development** | #1 (test harness), #11 (CI) | Everything else depends on being able to run and verify tests |
-| **WP-01 completion** | #3 (missing test files), #7 (role mapping alignment) | Adapter layer is the foundation for all output |
-| **WP-02 completion** | #4 (missing Byline elements), #5 (Atom filter parity), #10 (shared rendering) | Feed output is the primary product |
-| **WP-03 completion** | #2 (build the TSX), #6 (deduplicate allowed values), #8 (panel labels) | Quick fixes, mostly cleanup |
-| **Post-MVP** | #9 (WP-04/05/06) | These are correctly sequenced behind Gate A |
+| **Next product work** | #1 (WP-04/05/06) | The MVP feed layer is in place; remaining roadmap value is in additional output channels |
+| **Best risk reduction** | #2 (real-plugin CI validation), #3 (editor verification) | These reduce regression risk in the most integration-heavy areas |
+| **Adoption support** | #4 (consumer output reference) | Integration partners need concrete output examples |
+| **Process hygiene** | #5 (track dev-tooling advisories), #6 (use changelog and release-note policy consistently) | Keeps maintenance and release quality disciplined without blocking feature work |
 
 ---
 
@@ -128,3 +100,4 @@ Things that look incomplete but are correctly deferred by the spec:
 
 - [implementation-spec.md](../docs/planning/implementation-spec.md) — Work packages, cross-cutting concerns, delivery schedule
 - [wp-01.md](wp-01.md) through [wp-06.md](wp-06.md) — Individual work package specifications
+- [docs/quality/TEST_COVERAGE_MATRIX.md](../docs/quality/TEST_COVERAGE_MATRIX.md) — Current test coverage by domain

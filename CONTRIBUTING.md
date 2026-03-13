@@ -49,6 +49,16 @@ What not to do:
 - keep documentation, code, and CI changes separate when practical
 - include `Assisted-by: Codex` when AI materially contributed to the final change
 
+## Release discipline
+
+When preparing a real release:
+
+- update [CHANGELOG.md](CHANGELOG.md) first
+- move shipped changes out of `Unreleased` into a dated version section
+- use [RELEASE_NOTES.md](RELEASE_NOTES.md) when drafting the public release notes
+- include the AI-assistance disclosure in the release notes when materially relevant
+- keep release notes high signal: user-visible behavior, compatibility, CI/security changes, and notable docs changes
+
 ## Documentation updates
 
 When behavior, scope, or process changes, update the relevant docs in the same change set:

@@ -105,11 +105,17 @@ npm run build
 | File | Purpose |
 | --- | --- |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Development, verification, and AI-attribution guidance |
-| [CHANGELOG.md](CHANGELOG.md) | Human-readable project change history |
-| [RELEASE_NOTES.md](RELEASE_NOTES.md) | Release-note convention, including AI-assistance disclosure |
+| [CHANGELOG.md](CHANGELOG.md) | Human-readable project change history and release baseline |
+| [RELEASE_NOTES.md](RELEASE_NOTES.md) | Release-note convention and release checklist, including AI-assistance disclosure |
 | [.github/CODEOWNERS](.github/CODEOWNERS) | Default review ownership |
 | [.github/dependabot.yml](.github/dependabot.yml) | Automated dependency update policy |
 | [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md) | PR checklist and verification prompts |
+
+Release discipline:
+
+- update `CHANGELOG.md` when shipping real releases
+- draft public release notes using `RELEASE_NOTES.md`
+- include the Codex disclosure note in release notes when AI materially affected the release
 
 ## Design constraints
 
