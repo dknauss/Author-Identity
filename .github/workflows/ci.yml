@@ -12,6 +12,9 @@ on:
       - 'byline-feed/**'
       - '.github/workflows/ci.yml'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -78,7 +81,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress
 
       - name: Install Subversion
         run: sudo apt-get update && sudo apt-get install -y subversion
@@ -113,7 +116,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress
 
       - name: Run PHPCS
         run: vendor/bin/phpcs --standard=WordPress --extensions=php --ignore=vendor,node_modules,build,tests --report=checkstyle . | cs2pr
