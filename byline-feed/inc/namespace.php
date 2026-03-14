@@ -42,9 +42,9 @@ function bootstrap(): void {
  * Detect and return the active adapter.
  *
  * Priority order:
- * 1. Co-Authors Plus     — function_exists( 'get_coauthors' )
- * 2. PublishPress Authors — function_exists( 'publishpress_authors_get_post_authors' )
- * 3. Core WordPress      — always available (fallback)
+ * 1. PublishPress Authors — publishpress-specific API/class present.
+ * 2. Co-Authors Plus      — function_exists( 'get_coauthors' )
+ * 3. Core WordPress       — always available (fallback)
  *
  * @return Adapter
  */
@@ -55,14 +55,14 @@ function byline_feed_get_adapter(): Adapter {
 		return $_byline_feed_adapter;
 	}
 
-	if ( function_exists( 'get_coauthors' ) ) {
-		$adapter = new Adapter_CAP();
-	} elseif (
+	if (
 		function_exists( 'publishpress_authors_get_post_authors' )
 		|| function_exists( 'get_post_authors' )
 		|| class_exists( 'MultipleAuthors\\Classes\\Objects\\Author' )
 	) {
 		$adapter = new Adapter_PPA();
+	} elseif ( function_exists( 'get_coauthors' ) ) {
+		$adapter = new Adapter_CAP();
 	} else {
 		$adapter = new Adapter_Core();
 	}

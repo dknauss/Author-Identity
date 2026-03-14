@@ -56,7 +56,7 @@ class Test_Integration_CAP extends WP_UnitTestCase {
 		);
 
 		// Add the user as a co-author using CAP's own API.
-		add_coauthors( $post_id, array( 'cap-integration-author' ) );
+		\add_coauthors( $post_id, array( 'cap-integration-author' ) );
 
 		$post    = get_post( $post_id );
 		$authors = byline_feed_get_authors( $post );
@@ -100,7 +100,7 @@ class Test_Integration_CAP extends WP_UnitTestCase {
 		}
 
 		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
-		add_coauthors( $post_id, array( 'cap-guest-writer' ) );
+		\add_coauthors( $post_id, array( 'cap-guest-writer' ) );
 
 		$post    = get_post( $post_id );
 		$authors = byline_feed_get_authors( $post );
@@ -137,7 +137,7 @@ class Test_Integration_CAP extends WP_UnitTestCase {
 			)
 		);
 
-		add_coauthors( $post_id, array( 'cap-author-one', 'cap-author-two' ) );
+		\add_coauthors( $post_id, array( 'cap-author-one', 'cap-author-two' ) );
 
 		$post    = get_post( $post_id );
 		$authors = byline_feed_get_authors( $post );
@@ -165,7 +165,7 @@ class Test_Integration_CAP extends WP_UnitTestCase {
 			)
 		);
 
-		add_coauthors( $post_id, array( 'cap-contract-author' ) );
+		\add_coauthors( $post_id, array( 'cap-contract-author' ) );
 
 		$post    = get_post( $post_id );
 		$authors = byline_feed_get_authors( $post );
