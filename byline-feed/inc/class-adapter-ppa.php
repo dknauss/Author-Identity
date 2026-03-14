@@ -36,6 +36,15 @@ class Adapter_PPA implements Adapter {
 			return array();
 		}
 
+		$authors = array_values(
+			array_filter(
+				$authors,
+				static function ( $author ): bool {
+					return is_object( $author );
+				}
+			)
+		);
+
 		return array_map( array( $this, 'normalize' ), $authors );
 	}
 

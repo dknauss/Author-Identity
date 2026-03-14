@@ -24,8 +24,8 @@ class Test_Integration_CAP extends WP_UnitTestCase {
 	public function set_up(): void {
 		parent::set_up();
 
-		if ( ! function_exists( 'get_coauthors' ) ) {
-			$this->markTestSkipped( 'Co-Authors Plus is not active.' );
+		if ( ! function_exists( 'get_coauthors' ) || ! function_exists( 'add_coauthors' ) ) {
+			$this->markTestSkipped( 'Co-Authors Plus assignment API is not active.' );
 		}
 	}
 
