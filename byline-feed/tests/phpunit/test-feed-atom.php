@@ -149,26 +149,46 @@ class Test_Feed_Atom extends WP_UnitTestCase {
 	}
 
 	public function test_contributors_are_deduplicated_across_posts(): void {
-		$user_id = self::factory()->user->create(
-			array(
-				'display_name'  => 'Shared Atom Author',
-				'user_nicename' => 'shared-atom-author',
-			)
-		);
-
 		$post_ids = array(
 			self::factory()->post->create(
 				array(
-					'post_author' => $user_id,
 					'post_status' => 'publish',
 				)
 			),
 			self::factory()->post->create(
 				array(
-					'post_author' => $user_id,
 					'post_status' => 'publish',
 				)
 			),
+		);
+
+		add_filter(
+			'byline_feed_authors',
+			static function ( $authors, $post ) use ( $post_ids ) {
+				if ( ! in_array( $post->ID, $post_ids, true ) ) {
+					return $authors;
+				}
+
+				return array(
+					(object) array(
+						'id'           => 'shared-atom-author',
+						'display_name' => 'Shared Atom Author',
+						'description'  => '',
+						'url'          => '',
+						'avatar_url'   => '',
+						'user_id'      => 1,
+						'role'         => 'staff',
+						'is_guest'     => false,
+						'profiles'     => array(),
+						'now_url'      => '',
+						'uses_url'     => '',
+						'fediverse'    => '',
+						'ai_consent'   => '',
+					),
+				);
+			},
+			10,
+			2
 		);
 
 		$this->set_feed_posts( $post_ids );

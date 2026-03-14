@@ -103,28 +103,49 @@ class Test_Feed_JSON extends WP_UnitTestCase {
 
 	public function test_feed_level_authors_are_deduplicated_and_include_byline_extensions(): void {
 		update_option( 'posts_per_rss', 10 );
+		$post_ids = array();
 
-		$user_id = self::factory()->user->create(
+		$post_ids[] = self::factory()->post->create(
 			array(
-				'display_name'  => 'Shared JSON Author',
-				'user_nicename' => 'shared-json-author',
-			)
-		);
-
-		self::factory()->post->create(
-			array(
-				'post_author' => $user_id,
 				'post_status' => 'publish',
 				'post_title'  => 'First JSON Post',
 			)
 		);
 
-		self::factory()->post->create(
+		$post_ids[] = self::factory()->post->create(
 			array(
-				'post_author' => $user_id,
 				'post_status' => 'publish',
 				'post_title'  => 'Second JSON Post',
 			)
+		);
+
+		add_filter(
+			'byline_feed_authors',
+			static function ( $authors, $post ) use ( $post_ids ) {
+				if ( ! in_array( $post->ID, $post_ids, true ) ) {
+					return $authors;
+				}
+
+				return array(
+					(object) array(
+						'id'           => 'shared-json-author',
+						'display_name' => 'Shared JSON Author',
+						'description'  => '',
+						'url'          => '',
+						'avatar_url'   => '',
+						'user_id'      => 1,
+						'role'         => 'staff',
+						'is_guest'     => false,
+						'profiles'     => array(),
+						'now_url'      => '',
+						'uses_url'     => '',
+						'fediverse'    => '',
+						'ai_consent'   => '',
+					),
+				);
+			},
+			10,
+			2
 		);
 
 		$feed = $this->render_feed();
@@ -186,11 +207,8 @@ class Test_Feed_JSON extends WP_UnitTestCase {
 	}
 
 	public function test_item_byline_perspective_is_present_when_set_and_absent_when_unset(): void {
-		$user_id = self::factory()->user->create();
-
 		$unset_post_id = self::factory()->post->create(
 			array(
-				'post_author' => $user_id,
 				'post_status' => 'publish',
 				'post_title'  => 'No Perspective Post',
 				'post_date'   => '2026-03-13 10:00:00',
@@ -199,11 +217,39 @@ class Test_Feed_JSON extends WP_UnitTestCase {
 
 		$set_post_id = self::factory()->post->create(
 			array(
-				'post_author' => $user_id,
 				'post_status' => 'publish',
 				'post_title'  => 'Perspective Post',
 				'post_date'   => '2026-03-13 11:00:00',
 			)
+		);
+
+		add_filter(
+			'byline_feed_authors',
+			static function ( $authors, $post ) use ( $unset_post_id, $set_post_id ) {
+				if ( ! in_array( $post->ID, array( $unset_post_id, $set_post_id ), true ) ) {
+					return $authors;
+				}
+
+				return array(
+					(object) array(
+						'id'           => 'json-perspective-author',
+						'display_name' => 'JSON Perspective Author',
+						'description'  => '',
+						'url'          => '',
+						'avatar_url'   => '',
+						'user_id'      => 1,
+						'role'         => 'staff',
+						'is_guest'     => false,
+						'profiles'     => array(),
+						'now_url'      => '',
+						'uses_url'     => '',
+						'fediverse'    => '',
+						'ai_consent'   => '',
+					),
+				);
+			},
+			10,
+			2
 		);
 
 		update_post_meta( $set_post_id, '_byline_perspective', 'analysis' );
