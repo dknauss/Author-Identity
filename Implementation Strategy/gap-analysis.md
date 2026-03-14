@@ -84,6 +84,16 @@ The high-severity npm advisories were resolved. The remaining open Dependabot al
 
 The repository now has `CHANGELOG.md`, `RELEASE_NOTES.md`, issue templates, a PR template, and contributor guidance. The remaining gap is procedural: future releases should consistently update the changelog and apply the release-note convention when AI assistance materially shaped the release.
 
+### 8. Research backlog: semantic-publishing rationale is stronger than immediate scope
+
+The reorganized research set now makes a clearer distinction between current roadmap inputs and exploratory semantic-publishing work. The exploratory documents strengthen the long-term rationale for:
+
+- WP-05 JSON-LD
+- persistent identifiers later (`ORCID`, `ROR`, `DOI`)
+- an eventual publication/organization model beyond just author bylines
+
+But they do not justify expanding the near-term plugin scope yet. Near-term execution still runs through WP-04, WP-05, and then HM Authorship support before broader graph or identifier work.
+
 ---
 
 ## What's no longer a gap

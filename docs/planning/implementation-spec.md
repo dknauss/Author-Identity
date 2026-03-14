@@ -8,8 +8,9 @@
 - **PHP floor:** 7.4
 - **WP floor:** 6.0
 - **Dependencies:** None (all multi-author plugin integrations are optional adapters)
-- **Multi-author landscape:** See [multi-author-matrix.md](../research/multi-author-matrix.md) for a comparison of the systems this plugin adapts
-- **Protocol landscape:** See [protocol-coverage-map.md](../research/protocol-coverage-map.md) for how the output protocols (Byline, JSON-LD, fediverse:creator, TDM-Rep) relate to each other
+- **Multi-author landscape:** See [multi-author-matrix.md](../research/current/multi-author-matrix.md) for a comparison of the systems this plugin adapts
+- **Protocol landscape:** See [protocol-coverage-map.md](../research/current/protocol-coverage-map.md) for how the output protocols (Byline, JSON-LD, fediverse:creator, TDM-Rep) relate to each other
+- **JSON-LD background:** See [metadata-models-for-publishers.md](../research/current/metadata-models-for-publishers.md) for the vocabulary survey that informs WP-05 without changing the near-term plugin scope
 - **Scope boundaries:** See [explicitly not in scope](../../Implementation%20Strategy/implementation-spec.md#explicitly-not-in-scope) for what the vision discusses but the plugin deliberately defers
 
 ## Architectural overview
@@ -258,4 +259,4 @@ Summary: ~3.5 weeks to wp.org submission (Gate A), ~7–8 weeks total for all wo
 
 ## Gap analysis
 
-For the current audit of what still remains vs. what the specs require, see [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md). Gate A is complete. What remains after Gate A is WP-04/05/06, then a dedicated HM Authorship adapter tranche, and the known upstream Byline-spec issues to be resolved before a stable 1.0 release: multi-author item structure, JSON Feed structure, and terminology drift around `organization` / `publication` / `publisher`.
+For the current audit of what still remains vs. what the specs require, see [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md). Gate A is complete. What remains after Gate A is WP-04/05/06, then a dedicated HM Authorship adapter tranche, and the known upstream Byline-spec issues to be resolved before a stable 1.0 release: multi-author item structure, JSON Feed structure, and terminology drift around `organization` / `publication` / `publisher`. The exploratory research set in [`../research/exploratory/`](../research/exploratory/) strengthens the long-term case for publication/organization modeling and persistent identifiers, but does not change this near-term execution order.

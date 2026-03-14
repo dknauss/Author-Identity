@@ -1,6 +1,6 @@
 # Known Gaps, Security Notes, and Hardening Opportunities
 
-This document supplements the Phase 01 audit (`docs/audit/HM_WPCS_audit.md`) with additional findings from the source-level architecture review. For how these gaps compare across all multi-author systems, see [multi-author-matrix.md](multi-author-matrix.md).
+This document preserves the source-level Authorship findings that informed the broader Byline Feed research pass. Some references in the original audit pointed to Authorship-repo-specific audit artifacts that are not copied into this repository. For how these gaps compare across all multi-author systems, see [multi-author-matrix.md](multi-author-matrix.md).
 
 ## Security
 
@@ -38,19 +38,19 @@ $username = sanitize_title( sanitize_user( $request->get_param( 'name' ), true )
 $username = preg_replace( '/[^a-z0-9]/', '', $username );
 ```
 
-This can produce empty strings for non-ASCII names (e.g., Japanese, Arabic, Chinese names) or collide for near-duplicate display names. See `docs/audit/patch_scaffolds/01-02-security_build.md` for the planned hardening.
+This can produce empty strings for non-ASCII names (e.g., Japanese, Arabic, Chinese names) or collide for near-duplicate display names. This remains relevant as a hardening concern if Authorship adapter support moves from planning into implementation.
 
 ### Signup validation filter scope
 
 **Severity:** Low (code hygiene)
 
-`create_item()` adds an anonymous `wpmu_validate_user_signup` filter and never removes it. This is a request-scoped side effect that is inconsistent with the pattern used in `get_items()` where the filter is explicitly removed after use. See `docs/audit/patch_scaffolds/01-02-security_build.md`.
+`create_item()` adds an anonymous `wpmu_validate_user_signup` filter and never removes it. This is a request-scoped side effect that is inconsistent with the pattern used in `get_items()` where the filter is explicitly removed after use.
 
 ## Data integrity
 
 ### Post-insert author assignment failures are silent
 
-`InsertPostHandler::action_wp_insert_post()` catches exceptions from `set_authors()` and discards them. This means author attribution can silently fail during post save, migration, or programmatic post creation. The REST API path handles the same exceptions by returning `WP_Error`. See `docs/audit/patch_scaffolds/01-02-observability_build.md`.
+`InsertPostHandler::action_wp_insert_post()` catches exceptions from `set_authors()` and discards them. This means author attribution can silently fail during post save, migration, or programmatic post creation. The REST API path handles the same exceptions by returning `WP_Error`.
 
 ### `post_author` field divergence
 
@@ -72,7 +72,7 @@ On sites with Elasticsearch (e.g., WordPress VIP), this is likely irrelevant as 
 
 ### Editor component render behavior
 
-`AuthorsSelect.tsx` performs state initialization and can trigger `apiFetch()` from render-time conditionals. See `docs/audit/patch_scaffolds/01-02-performance_build.md`.
+`AuthorsSelect.tsx` performs state initialization and can trigger `apiFetch()` from render-time conditionals.
 
 ## Feed output limitations
 
@@ -82,7 +82,7 @@ On sites with Elasticsearch (e.g., WordPress VIP), this is likely irrelevant as 
 - No `dc:creator` output for individual co-authors.
 - No Schema.org / JSON-LD author metadata in feeds.
 
-See `../planning/byline-spec-plan.md` for the proposed Byline spec implementation that would address structured feed output.
+See [../../planning/byline-spec-plan.md](../../planning/byline-spec-plan.md) for the Byline planning document that originally motivated structured feed output.
 
 ## Compatibility
 
@@ -92,7 +92,7 @@ Plugin header declares `Requires at least: 5.4`, tested up to 6.2. The 6.2 cap i
 
 ### PHP version
 
-Plugin requires PHP 7.2+. Tooling (PHPCS, PHPStan) is pinned to PHP 7.4 and does not run on PHP 8.5 without deprecation suppression. See `docs/audit/foundation-quality-baseline.md`.
+Plugin requires PHP 7.2+. Tooling observations in the original Authorship audit were tied to repo-specific quality-baseline documents that are not copied into this repository.
 
 ### Multisite
 

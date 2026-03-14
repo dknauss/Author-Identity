@@ -4,7 +4,7 @@
 
 Maximize adoption of the Byline RSS spec (bylinespec.org) across the WordPress ecosystem by building a single standalone plugin that outputs Byline-structured feed data regardless of which multi-author plugin (if any) a site uses.
 
-This document complements `byline-spec-plan.md`, which covers the Authorship-specific integration. The strategy here is broader: a plugin that lives on wp.org and works for any WordPress site. For a detailed comparison of the multi-author systems the plugin must support, see [multi-author-matrix.md](../research/multi-author-matrix.md).
+This document complements `byline-spec-plan.md`, which covers the Authorship-specific integration. The strategy here is broader: a plugin that lives on wp.org and works for any WordPress site. For a detailed comparison of the multi-author systems the plugin must support, see [multi-author-matrix.md](../research/current/multi-author-matrix.md).
 
 ## The adoption problem
 

@@ -51,5 +51,8 @@ wp-config.php
 byline-feed/.npm-cache/
 byline-feed/.phpunit.result.cache
 
+# macOS Finder metadata
+.DS_Store
+
 # Private (not for public repo)
 /private/
