@@ -77,6 +77,7 @@ class Test_Adapter_CAP extends WP_UnitTestCase {
 		$this->assertSame( 'staff', $author->role );
 		$this->assertFalse( $author->is_guest );
 		$this->assertSame( '@jane@example.social', $author->fediverse );
+		$this->assertSame( '', $author->ap_actor_url );
 		$this->assertSame( 'allow', $author->ai_consent );
 		$this->assertSame( 'https://example.com/jane/social', $author->profiles[0]['href'] );
 		$this->assertSame( 'me', $author->profiles[0]['rel'] );
@@ -102,6 +103,7 @@ class Test_Adapter_CAP extends WP_UnitTestCase {
 		$this->assertSame( 'guest', $author->role );
 		$this->assertTrue( $author->is_guest );
 		$this->assertSame( '', $author->fediverse );
+		$this->assertSame( '', $author->ap_actor_url );
 		$this->assertSame( '', $author->ai_consent );
 	}
 

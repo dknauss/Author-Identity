@@ -16,10 +16,47 @@ defined( 'ABSPATH' ) || exit;
  * Register user-profile hooks for canonical Byline author fields.
  */
 function register_author_meta_hooks(): void {
+	add_action( 'init', __NAMESPACE__ . '\\register_author_meta' );
 	add_action( 'show_user_profile', __NAMESPACE__ . '\\render_author_meta_fields' );
 	add_action( 'edit_user_profile', __NAMESPACE__ . '\\render_author_meta_fields' );
 	add_action( 'personal_options_update', __NAMESPACE__ . '\\save_author_meta_fields' );
 	add_action( 'edit_user_profile_update', __NAMESPACE__ . '\\save_author_meta_fields' );
+}
+
+/**
+ * Register plugin-owned user meta surfaced through the REST API.
+ */
+function register_author_meta(): void {
+	register_meta(
+		'user',
+		'byline_feed_fediverse',
+		array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => __NAMESPACE__ . '\\normalize_byline_feed_fediverse',
+			'auth_callback'     => __NAMESPACE__ . '\\can_edit_byline_feed_user_meta',
+		)
+	);
+}
+
+/**
+ * Determine whether the current user can edit a Byline user-meta field.
+ *
+ * The callback signature varies by WordPress version. We only care about the
+ * user object being edited, which is passed as the third argument.
+ *
+ * @param mixed ...$args Auth callback arguments from WordPress.
+ * @return bool
+ */
+function can_edit_byline_feed_user_meta( ...$args ): bool {
+	$object_id = isset( $args[2] ) ? (int) $args[2] : 0;
+
+	if ( $object_id > 0 ) {
+		return current_user_can( 'edit_user', $object_id );
+	}
+
+	return current_user_can( 'edit_users' );
 }
 
 /**
@@ -56,6 +93,97 @@ function get_byline_feed_uses_url_for_user( int $user_id ): string {
 	$uses_url = get_user_meta( $user_id, 'byline_feed_uses_url', true );
 
 	return is_string( $uses_url ) ? esc_url_raw( $uses_url ) : '';
+}
+
+/**
+ * Return the stored fediverse handle for a user.
+ *
+ * This is authored identity data. It is user-entered and emitted as-is once
+ * normalized to the `@user@instance` format.
+ *
+ * @param int $user_id User ID.
+ * @return string
+ */
+function get_byline_feed_fediverse_for_user( int $user_id ): string {
+	$handle = get_user_meta( $user_id, 'byline_feed_fediverse', true );
+
+	return is_string( $handle ) ? normalize_byline_feed_fediverse( $handle ) : '';
+}
+
+/**
+ * Return the ActivityPub actor URL for a linked WordPress user when resolvable.
+ *
+ * This is derived identity data. It must remain distinct from authored
+ * `profiles` links and from the authored `fediverse` handle.
+ *
+ * @param int $user_id User ID.
+ * @return string
+ */
+function get_byline_feed_ap_actor_url_for_user( int $user_id ): string {
+	if ( $user_id <= 0 ) {
+		return '';
+	}
+
+	$actor_url = '';
+
+	if ( class_exists( '\\Activitypub\\Collection\\Actors' ) && method_exists( '\\Activitypub\\Collection\\Actors', 'get_by_id' ) ) {
+		$actor = \Activitypub\Collection\Actors::get_by_id( $user_id );
+
+		if ( ! is_wp_error( $actor ) ) {
+			if ( is_object( $actor ) && method_exists( $actor, 'get_id' ) ) {
+				$actor_id  = $actor->get_id();
+				$actor_url = is_string( $actor_id ) ? esc_url_raw( $actor_id ) : '';
+			} elseif ( is_object( $actor ) && isset( $actor->id ) && is_string( $actor->id ) ) {
+				$actor_url = esc_url_raw( $actor->id );
+			}
+		}
+	}
+
+	if ( '' === $actor_url && defined( 'ACTIVITYPUB_REST_NAMESPACE' ) ) {
+		$actor_url = esc_url_raw(
+			rest_url(
+				trailingslashit( constant( 'ACTIVITYPUB_REST_NAMESPACE' ) ) . 'users/' . $user_id
+			)
+		);
+	}
+
+	/**
+	 * Filters the resolved ActivityPub actor URL for a linked WP user.
+	 *
+	 * @param string $actor_url Resolved actor URL or empty string.
+	 * @param int    $user_id   WordPress user ID.
+	 */
+	$actor_url = apply_filters( 'byline_feed_ap_actor_url', $actor_url, $user_id );
+
+	return is_string( $actor_url ) ? esc_url_raw( $actor_url ) : '';
+}
+
+/**
+ * Normalize a fediverse handle to the expected `@user@instance` format.
+ *
+ * @param mixed $handle Candidate handle value.
+ * @return string
+ */
+function normalize_byline_feed_fediverse( $handle ): string {
+	if ( ! is_string( $handle ) ) {
+		return '';
+	}
+
+	$handle = trim( sanitize_text_field( $handle ) );
+
+	if ( '' === $handle ) {
+		return '';
+	}
+
+	if ( ! preg_match( '/^@?[\w.-]+@[\w.-]+$/', $handle ) ) {
+		return '';
+	}
+
+	if ( '@' !== substr( $handle, 0, 1 ) ) {
+		$handle = '@' . $handle;
+	}
+
+	return $handle;
 }
 
 /**
@@ -145,9 +273,10 @@ function parse_byline_profiles_textarea( string $textarea ): array {
  * @param \WP_User $user User being edited.
  */
 function render_author_meta_fields( \WP_User $user ): void {
-	$profiles = get_byline_feed_profiles_for_user( $user->ID );
-	$now_url  = get_byline_feed_now_url_for_user( $user->ID );
-	$uses_url = get_byline_feed_uses_url_for_user( $user->ID );
+	$profiles  = get_byline_feed_profiles_for_user( $user->ID );
+	$now_url   = get_byline_feed_now_url_for_user( $user->ID );
+	$uses_url  = get_byline_feed_uses_url_for_user( $user->ID );
+	$fediverse = get_byline_feed_fediverse_for_user( $user->ID );
 
 	$profile_lines = array_map(
 		static function ( array $profile ): string {
@@ -178,6 +307,13 @@ function render_author_meta_fields( \WP_User $user ): void {
 				<input name="byline_feed_uses_url" id="byline-feed-uses-url" type="url" value="<?php echo esc_attr( $uses_url ); ?>" class="regular-text" />
 			</td>
 		</tr>
+		<tr>
+			<th><label for="byline-feed-fediverse"><?php esc_html_e( 'Fediverse handle', 'byline-feed' ); ?></label></th>
+			<td>
+				<input name="byline_feed_fediverse" id="byline-feed-fediverse" type="text" value="<?php echo esc_attr( $fediverse ); ?>" class="regular-text code" />
+				<p class="description"><?php esc_html_e( 'Your Mastodon or fediverse account (for example @you@mastodon.social). Used for author attribution on shared links.', 'byline-feed' ); ?></p>
+			</td>
+		</tr>
 	</table>
 	<?php
 }
@@ -202,9 +338,10 @@ function save_author_meta_fields( int $user_id ): void {
 		return;
 	}
 
-	$profiles = array();
-	$now_url  = '';
-	$uses_url = '';
+		$profiles  = array();
+		$now_url   = '';
+		$uses_url  = '';
+		$fediverse = '';
 
 	if ( isset( $_POST['byline_feed_profiles'] ) ) {
 		$profiles = parse_byline_profiles_textarea( sanitize_textarea_field( wp_unslash( $_POST['byline_feed_profiles'] ) ) );
@@ -216,6 +353,10 @@ function save_author_meta_fields( int $user_id ): void {
 
 	if ( isset( $_POST['byline_feed_uses_url'] ) ) {
 		$uses_url = esc_url_raw( wp_unslash( $_POST['byline_feed_uses_url'] ) );
+	}
+
+	if ( isset( $_POST['byline_feed_fediverse'] ) ) {
+		$fediverse = normalize_byline_feed_fediverse( sanitize_text_field( wp_unslash( $_POST['byline_feed_fediverse'] ) ) );
 	}
 
 	if ( empty( $profiles ) ) {
@@ -234,5 +375,11 @@ function save_author_meta_fields( int $user_id ): void {
 		delete_user_meta( $user_id, 'byline_feed_uses_url' );
 	} else {
 		update_user_meta( $user_id, 'byline_feed_uses_url', $uses_url );
+	}
+
+	if ( '' === $fediverse ) {
+		delete_user_meta( $user_id, 'byline_feed_fediverse' );
+	} else {
+		update_user_meta( $user_id, 'byline_feed_fediverse', $fediverse );
 	}
 }

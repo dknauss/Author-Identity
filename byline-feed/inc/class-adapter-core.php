@@ -30,11 +30,6 @@ class Adapter_Core implements Adapter {
 			return array();
 		}
 
-		$fediverse = get_user_meta( $user->ID, 'byline_feed_fediverse', true );
-		if ( ! is_string( $fediverse ) ) {
-			$fediverse = '';
-		}
-
 		$ai_consent = get_user_meta( $user->ID, 'byline_feed_ai_consent', true );
 		if ( ! is_string( $ai_consent ) ) {
 			$ai_consent = '';
@@ -53,7 +48,8 @@ class Adapter_Core implements Adapter {
 				'profiles'     => get_byline_feed_profiles_for_user( $user->ID ),
 				'now_url'      => get_byline_feed_now_url_for_user( $user->ID ),
 				'uses_url'     => get_byline_feed_uses_url_for_user( $user->ID ),
-				'fediverse'    => $fediverse,
+				'fediverse'    => get_byline_feed_fediverse_for_user( $user->ID ),
+				'ap_actor_url' => get_byline_feed_ap_actor_url_for_user( $user->ID ),
 				'ai_consent'   => $ai_consent,
 			),
 		);

@@ -87,6 +87,7 @@ class Test_Adapter_PPA extends WP_UnitTestCase {
 		$this->assertSame( 'contributor', $author->role );
 		$this->assertFalse( $author->is_guest );
 		$this->assertSame( '@alex@example.social', $author->fediverse );
+		$this->assertSame( '', $author->ap_actor_url );
 		$this->assertSame( 'deny', $author->ai_consent );
 		$this->assertSame( 'https://example.com/alex/social', $author->profiles[0]['href'] );
 		$this->assertSame( 'me', $author->profiles[0]['rel'] );
@@ -146,6 +147,7 @@ class Test_Adapter_PPA extends WP_UnitTestCase {
 		$this->assertSame( 0, $author->user_id );
 		$this->assertSame( '', $author->url );
 		$this->assertSame( '', $author->fediverse );
+		$this->assertSame( '', $author->ap_actor_url );
 		$this->assertSame( '', $author->ai_consent );
 	}
 

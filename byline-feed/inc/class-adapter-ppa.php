@@ -85,13 +85,14 @@ class Adapter_PPA implements Adapter {
 			}
 		}
 
-		$fediverse  = '';
-		$ai_consent = '';
+		$fediverse    = '';
+		$ap_actor_url = '';
+		$ai_consent   = '';
 
 		if ( $user_id ) {
-			$fediverse_meta  = get_user_meta( $user_id, 'byline_feed_fediverse', true );
+			$fediverse       = get_byline_feed_fediverse_for_user( (int) $user_id );
+			$ap_actor_url    = get_byline_feed_ap_actor_url_for_user( (int) $user_id );
 			$ai_consent_meta = get_user_meta( $user_id, 'byline_feed_ai_consent', true );
-			$fediverse       = is_string( $fediverse_meta ) ? $fediverse_meta : '';
 			$ai_consent      = is_string( $ai_consent_meta ) ? $ai_consent_meta : '';
 		}
 
@@ -108,6 +109,7 @@ class Adapter_PPA implements Adapter {
 			'now_url'      => $user_id ? get_byline_feed_now_url_for_user( (int) $user_id ) : '',
 			'uses_url'     => $user_id ? get_byline_feed_uses_url_for_user( (int) $user_id ) : '',
 			'fediverse'    => $fediverse,
+			'ap_actor_url' => $ap_actor_url,
 			'ai_consent'   => $ai_consent,
 		);
 	}

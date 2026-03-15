@@ -11,10 +11,10 @@ Current shipped scope:
 - normalized author resolution for core WordPress, Co-Authors Plus, and PublishPress Authors
 - Byline output in RSS2, Atom, and JSON Feed
 - perspective storage and editor UI
+- `fediverse:creator` meta tag output for singular content
 
 Next planned tranches:
 
-- WP-04 `fediverse:creator`
 - WP-05 JSON-LD
 - HM Authorship adapter support
 - WP-06 rights and AI-consent output
@@ -34,6 +34,7 @@ The current implementation focus is the `byline-feed` plugin:
 
 - Normalize author data from core WordPress, Co-Authors Plus, and PublishPress Authors.
 - Emit structured Byline metadata in RSS2, Atom, and JSON Feed.
+- Emit `fediverse:creator` meta tags in HTML heads for authors with configured fediverse handles.
 - Expose content perspective metadata for feed consumers.
 - Preserve standard feed elements so Byline output remains additive.
 - Prepare the next output and adapter tranches without expanding the active roadmap into broader identity-framework work.
@@ -53,8 +54,8 @@ The current implementation focus is the `byline-feed` plugin:
 
 | Status | Items |
 | --- | --- |
-| Implemented | adapter interface plus core, Co-Authors Plus, and PublishPress Authors adapters<br>RSS2, Atom, and JSON Feed Byline output, including `profile` / `now` / `uses` for linked WordPress users via plugin-owned meta<br>content perspective storage and editor UI<br>runtime validation for the normalized author contract<br>PHPUnit, PHPCS, and GitHub Actions CI scaffolding |
-| Not yet implemented | `fediverse:creator` output<br>multi-author JSON-LD output<br>AI consent and rights output<br>Molongui and HM Authorship adapters |
+| Implemented | adapter interface plus core, Co-Authors Plus, and PublishPress Authors adapters<br>RSS2, Atom, and JSON Feed Byline output, including `profile` / `now` / `uses` for linked WordPress users via plugin-owned meta<br>content perspective storage and editor UI<br>`fediverse:creator` meta tags for authors with configured fediverse handles<br>conservative `ap_actor_url` resolution for linked WordPress users when ActivityPub identity can be resolved<br>runtime validation for the normalized author contract<br>PHPUnit, PHPCS, and GitHub Actions CI scaffolding |
+| Not yet implemented | multi-author JSON-LD output<br>AI consent and rights output<br>Molongui and HM Authorship adapters |
 | Primary references | [byline-feed/](byline-feed/)<br>[byline-feed/docs/output-reference.md](byline-feed/docs/output-reference.md)<br>[implementation-spec.md](Implementation%20Strategy/implementation-spec.md)<br>[wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md) |
 
 ## Plugin layout
@@ -77,6 +78,7 @@ byline-feed/
 |   |-- feed-rss2.php
 |   |-- feed-atom.php
 |   |-- feed-json.php
+|   |-- fediverse.php
 |   |-- author-meta.php
 |   `-- perspective.php
 |-- src/
@@ -90,6 +92,7 @@ byline-feed/
     |-- test-adapter-cap.php
     |-- test-adapter-ppa.php
     |-- test-author-contract.php
+    |-- test-fediverse.php
     |-- test-feed-atom.php
     |-- test-feed-json.php
     |-- test-feed-rss2.php

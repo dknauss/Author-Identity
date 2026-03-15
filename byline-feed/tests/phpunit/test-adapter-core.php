@@ -106,6 +106,7 @@ class Test_Adapter_Core extends WP_UnitTestCase {
 		$this->assertSame( '', $author->now_url );
 		$this->assertSame( '', $author->uses_url );
 		$this->assertSame( '', $author->fediverse );
+		$this->assertSame( '', $author->ap_actor_url );
 		$this->assertSame( '', $author->ai_consent );
 	}
 
@@ -144,5 +145,6 @@ class Test_Adapter_Core extends WP_UnitTestCase {
 		$this->assertSame( 'me', $author->profiles[0]['rel'] );
 		$this->assertSame( 'https://example.com/now/', $author->now_url );
 		$this->assertSame( 'https://example.com/uses/', $author->uses_url );
+		$this->assertSame( '', $author->ap_actor_url );
 	}
 }

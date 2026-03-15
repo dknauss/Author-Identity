@@ -8,21 +8,22 @@ Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Enriches RSS2 and Atom feeds with structured author identity metadata following the Byline specification.
+Enriches RSS2, Atom, and JSON Feed output with structured author identity metadata following the Byline specification, and emits fediverse author-attribution meta tags for singular content.
 
 == Description ==
 
 Byline Feed adds machine-readable author metadata to WordPress feeds using the [Byline specification](https://bylinespec.org/). It is designed to work with multi-author editorial sites while preserving standard feed elements for compatibility.
 
-Implementation-level output details, including example RSS2 and Atom fragments, are documented in the repository at `byline-feed/docs/output-reference.md`.
+Implementation-level output details, including example feed fragments and HTML-head metadata, are documented in the repository at `byline-feed/docs/output-reference.md`.
 
 The plugin currently supports:
 
-* RSS2 and Atom Byline output
+* RSS2, Atom, and JSON Feed Byline output
 * Co-Authors Plus adapter
 * PublishPress Authors adapter
 * Core WordPress fallback adapter
 * Content Perspective editorial field
+* `fediverse:creator` meta tags for authors with configured fediverse handles
 * Filter and action hooks for output customization
 
 Byline Feed is additive. It preserves core feed elements such as `<author>` and `<dc:creator>` and adds Byline metadata alongside them.
@@ -32,8 +33,9 @@ Byline Feed is additive. It preserves core feed elements such as `<author>` and 
 * Adds `byline:contributors` with structured contributor profiles at feed level
 * Adds item-level `byline:author`, `byline:role`, and `byline:perspective` elements
 * Supports `byline:profile`, `byline:now`, and `byline:uses` from plugin-owned user meta
+* Emits `<meta name="fediverse:creator">` tags on singular views for authors with configured handles
 * Auto-detects Co-Authors Plus, PublishPress Authors, or falls back to core WordPress
-* Adds a Content Perspective field in the block editor and classic editor
+* Adds Content Perspective and fediverse-handle fields in WordPress editing/profile UI
 * Validates normalized author data before output
 * Works without requiring a specific multi-author plugin
 
@@ -48,13 +50,14 @@ Byline Feed is additive. It preserves core feed elements such as `<author>` and 
 1. Upload the `byline-feed` folder to `/wp-content/plugins/`, or install it through the WordPress admin once published.
 2. Activate the plugin through the Plugins screen in WordPress.
 3. If you use Co-Authors Plus or PublishPress Authors, keep that plugin active.
-4. Visit your RSS2 or Atom feed and inspect the output for Byline elements.
+4. Optionally add a fediverse handle such as `@you@example.social` to the user profile of each linked author who should receive fediverse attribution.
+5. Visit your RSS2, Atom, or JSON feed and inspect the output for Byline elements.
 
 == Frequently Asked Questions ==
 
 = Does this replace my SEO plugin? =
 
-No. Byline Feed currently focuses on feed output and perspective metadata. JSON-LD and `fediverse:creator` output are planned, but are not part of the current release.
+No. Byline Feed currently focuses on author identity in feeds and lightweight HTML head metadata. It does not replace a full SEO plugin. JSON-LD schema output is planned for a later work package.
 
 = What is the Byline spec? =
 
@@ -62,7 +65,11 @@ The Byline specification defines an XML namespace for structured author attribut
 
 = Which feed formats are supported? =
 
-RSS2 and Atom are supported now.
+RSS2, Atom, and JSON Feed are supported now.
+
+= Does this support Mastodon author attribution? =
+
+Yes. If an author has a fediverse handle configured in their WordPress profile, Byline Feed outputs `<meta name="fediverse:creator">` tags on singular content so compatible fediverse consumers can attribute shared links.
 
 = Where can I see the exact XML this plugin emits? =
 
@@ -81,6 +88,7 @@ Content Perspective is an editorial field that communicates the intent behind a 
 = 0.1.0 =
 * Initial development release.
 * Adapter layer with Co-Authors Plus, PublishPress Authors, and core WordPress support.
-* RSS2 and Atom Byline namespace output.
+* RSS2, Atom, and JSON Feed Byline output.
 * Content Perspective field with block editor panel and classic editor support.
+* Fediverse-handle profile field and `fediverse:creator` meta tag output.
 * Test and CI baseline established for supported PHP and WordPress versions.

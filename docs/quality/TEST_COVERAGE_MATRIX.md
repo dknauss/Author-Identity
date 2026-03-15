@@ -61,10 +61,10 @@
 
 | Domain | Status | Test file | Notes |
 | --- | --- | --- | --- |
-| fediverse:creator meta tag output | **Gap** | Missing file | `inc/fediverse.php` and tests do not exist. |
-| fediverse handle normalization | **Gap** | Missing file | No code exists. |
-| fediverse user profile field | **Gap** | Missing file | No UI exists. |
-| ActivityPub actor URL resolution for WP-04/05 | **Gap** | Missing file | `ap_actor_url` is now an official cross-cutting field for WP-04/WP-05, but no code or tests exist. |
+| fediverse:creator meta tag output | **Covered** | `test-fediverse.php` | Singular output, multi-author output, filter overrides, and non-singular omission are covered. |
+| fediverse handle normalization | **Covered** | `test-fediverse.php`, `test-author-meta.php` | Handles normalize to leading `@` on save and before output. |
+| fediverse user profile field | **Covered** | `test-author-meta.php` | Render, save, normalization, delete, and meta registration are covered. |
+| ActivityPub actor URL resolution for WP-04/05 | **Partial** | `test-author-meta.php` | Empty fallback and filter override are covered. Positive integration against the real ActivityPub plugin is still missing. |
 | JSON-LD Article + Person schema | **Gap** | Missing file | `inc/schema.php` and tests do not exist. |
 | JSON-LD sameAs from profiles | **Gap** | Missing file | No code exists. |
 | JSON-LD sameAs extension with `ap_actor_url` | **Gap** | Missing file | No code exists. `did:web:` is intentionally excluded from the active test matrix. |
@@ -78,10 +78,10 @@
 ## Priority backlog (highest impact first)
 
 1. **Add browser or end-to-end coverage for the perspective panel.** This is the main remaining shipped-scope verification gap.
-2. **Add `test-fediverse.php` when WP-04 starts.** Treat fediverse output tests as part of the feature, not a follow-up.
-3. **Add `test-schema.php` when WP-05 starts.** Cover graph shape, multi-author output, `ap_actor_url` handling, and coexistence with other schema providers.
-4. **Add HM Authorship adapter tests when that tranche starts.** Unit normalization + real-plugin integration coverage should land together.
-5. **Add `test-rights.php` when WP-06 starts.** Treat rights/consent coverage as part of the work package from day one, after the HM Authorship tranche.
+2. **Add `test-schema.php` when WP-05 starts.** Cover graph shape, multi-author output, `ap_actor_url` handling, and coexistence with other schema providers.
+3. **Add HM Authorship adapter tests when that tranche starts.** Unit normalization + real-plugin integration coverage should land together.
+4. **Add `test-rights.php` when WP-06 starts.** Treat rights/consent coverage as part of the work package from day one, after the HM Authorship tranche.
+5. **Add real ActivityPub-plugin integration checks for `ap_actor_url`.** The current WP-04 suite intentionally keeps actor resolution conservative and only partially covered.
 6. **Optional later hardening:** add deeper Byline spec-conformance and round-trip parsing tests for feed output.
 
 ## Quality target

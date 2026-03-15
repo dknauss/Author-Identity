@@ -11,12 +11,12 @@ Current shipped output:
 - RSS2 Byline namespace and metadata
 - Atom Byline namespace and metadata
 - JSON Feed 1.1 output with `_byline` extensions
+- `fediverse:creator` meta tags on singular HTML views
 - Perspective post meta and feed output
 - Public filters and actions for feed customization
 
 Not yet shipped:
 
-- `fediverse:creator`
 - JSON-LD output
 - rights / TDM / AI-consent output
 
@@ -41,7 +41,7 @@ Required fields:
 
 Optional fields:
 
-| Field | Type | Zero value | Current feed use |
+| Field | Type | Zero value | Current use |
 | --- | --- | --- | --- |
 | `description` | string | `''` | Emitted as `byline:context` when non-empty |
 | `url` | string | `''` | Emitted as `byline:url` when non-empty |
@@ -52,13 +52,33 @@ Optional fields:
 | `profiles` | array | `[]` | Emitted as `byline:profile` when valid entries are present |
 | `now_url` | string | `''` | Emitted as `byline:now` when non-empty |
 | `uses_url` | string | `''` | Emitted as `byline:uses` when non-empty |
-| `fediverse` | string | `''` | Not emitted yet |
+| `fediverse` | string | `''` | Emitted as `fediverse:creator` in HTML head when non-empty |
+| `ap_actor_url` | string | `''` | Not emitted in current feed outputs; supporting identity field for WP-04/WP-05 |
 | `ai_consent` | string | `''` | Not emitted yet |
 
 Important current limitation:
 
 - canonical plugin-owned storage now exists for linked WordPress users
 - guest-author profile mapping in upstream multi-author plugins is not yet implemented unless a site injects values through filters
+
+## HTML head output
+
+The plugin hooks `wp_head` and emits one `<meta name="fediverse:creator">` tag for each normalized author on the current singular post who has a valid fediverse handle.
+
+Example:
+
+```html
+<meta name="fediverse:creator" content="@jane@example.social" />
+<meta name="fediverse:creator" content="@editor@example.news" />
+```
+
+Behavior:
+
+- only emitted on singular post/page views
+- omitted entirely on archives, the home page, and other non-singular routes
+- handles are normalized to include a leading `@`
+- `profiles[]` and `ap_actor_url` do not substitute for the `fediverse` handle
+- per-author handle output can be overridden with `byline_feed_fediverse_handle`
 
 ## RSS2 output
 

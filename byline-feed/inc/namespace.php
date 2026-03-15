@@ -32,6 +32,7 @@ function bootstrap(): void {
 	Feed_RSS2\register_hooks();
 	Feed_Atom\register_hooks();
 	Feed_JSON\register_hooks();
+	Fediverse\register_hooks();
 	register_author_meta_hooks();
 
 	// Register perspective meta field.
@@ -211,6 +212,8 @@ function normalize_author_object( $author, \WP_Post $post ): ?object {
 		'now_url'      => isset( $author->now_url ) && is_string( $author->now_url ) ? $author->now_url : '',
 		'uses_url'     => isset( $author->uses_url ) && is_string( $author->uses_url ) ? $author->uses_url : '',
 		'fediverse'    => isset( $author->fediverse ) && is_string( $author->fediverse ) ? $author->fediverse : '',
+		// Derived field: only populate when ActivityPub identity is confidently resolvable.
+		'ap_actor_url' => isset( $author->ap_actor_url ) && is_string( $author->ap_actor_url ) ? $author->ap_actor_url : '',
 		'ai_consent'   => isset( $author->ai_consent ) && is_string( $author->ai_consent ) ? $author->ai_consent : '',
 	);
 

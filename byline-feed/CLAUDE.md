@@ -11,10 +11,10 @@ The mental model: **WordPress is a Personal Data Server for authors.** The autho
 ## Active work packages
 
 MVP (wp.org submission target): WP-01, WP-02, WP-03
-Post-MVP gated: WP-04, WP-05, WP-06
+Post-MVP active: WP-04, WP-05, WP-06
 Reserved/deferred: WP-07 (did:web:)
 
-Do not expand scope into WP-04+ until Gate A is passed. See `implementation-spec.md § Release gates`.
+Gate A is complete. Keep WP-04 and WP-05 tightly scoped before moving to the next adapter tranche and WP-06. See `implementation-spec.md § Release gates`.
 
 ## Normalized author object — field constraints
 
@@ -32,7 +32,7 @@ This matters most in WP-05 (JSON-LD Person objects indexed by Google). A Gravata
 
 - Guest authors (`is_guest: true`) MUST return empty string — no domain-anchored AP identity.
 - Adapter resolution: check user meta for AP plugin's stored actor URL; construct it if AP plugin is active and meta is absent.
-- This plugin outputs `ap_actor_url` in `fediverse:creator` tags and JSON-LD `sameAs`. That is the full extent of our jurisdiction.
+- This plugin may surface `ap_actor_url` as supporting identity data for WP-04 and WP-05, but `fediverse:creator` tags are driven by the authored `fediverse` handle. Do not substitute one for the other.
 
 ## did field — reserved, do not implement yet
 

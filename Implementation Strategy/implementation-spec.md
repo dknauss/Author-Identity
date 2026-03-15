@@ -469,15 +469,15 @@ A shorter document covering:
 
 ---
 
-## Pre-WP-04 refinements
+## Completed pre-WP-04 refinements
 
-The following items should be resolved before starting WP-04. They address code duplication and test gaps introduced during WP-01/02/03 that will compound as new output channels are added.
+These items were resolved before WP-04 shipped. They addressed code duplication and test gaps introduced during WP-01/02/03 that would otherwise have compounded as new output channels were added.
 
 ### R-1. Extract shared `output_person()` from feed layers
 
 `feed-rss2.php` and `feed-atom.php` each contain an identical `output_person()` function. Any bug fix or spec change (e.g., adding a new Byline element) requires updating two files. Extract the shared logic to a common location (e.g., `inc/feed-common.php` or a function in `namespace.php`) and have both layers call it.
 
-**Priority:** Do before WP-04, which will add a third output channel and make triple-maintenance worse.
+**Status:** Completed before WP-04.
 
 **Files:** `inc/feed-rss2.php`, `inc/feed-atom.php`, new shared file.
 
@@ -495,7 +495,7 @@ The Atom test suite verifies namespace, contributors, author refs, perspective, 
 
 The `save_author_meta_fields()` and `render_author_meta_fields()` functions in `author-meta.php` handle nonce verification, capability checks, and `$_POST` parsing, but have no test coverage. The save path is admin-only and low-risk, but it's the only untested data persistence path in the plugin.
 
-**Priority:** Lower than R-1/R-2/R-3. Can be deferred past WP-04 if needed.
+**Status:** Completed before WP-04.
 
 **Files:** `tests/phpunit/test-author-meta.php` (new).
 
@@ -518,7 +518,7 @@ Based on the [gap analysis](gap-analysis.md) — what exists, what remains, and 
 | **CONTRIBUTING.md** | Repository-level doc exists | Add plugin-local quick-start only if needed | 0.5–1 day | CI |
 | **wp.org submission** | — | Readme review, plugin check, screenshots, initial release | 1–2 days | Gate A |
 | | | | | |
-| **WP-04: fediverse:creator** | 0% | Meta registration, user profile field, `wp_head` output, handle normalization, tests | 3–4 days | WP-01 |
+| **WP-04: fediverse:creator** | Implemented | Keep docs current and add deeper ActivityPub integration coverage only when the real plugin is in play | Ongoing maintenance | WP-01 |
 | **WP-05: JSON-LD schema** | 0% | Article+Person schema, sameAs from profiles, Yoast/Rank Math detection, tests | 4–5 days | WP-01 |
 | **WP-06: AI consent** | 0% | Per-author/per-post consent, resolution logic, HTML/header output, ai.txt, user/post UI, audit logging, tests | 6–8 days | WP-01 |
 | **Gate B': adapter-proven expansion** | — | WP-04 + WP-05 + HM Authorship shipped | After Gate A | WP-04/05 + HM Authorship |
@@ -530,8 +530,8 @@ Based on the [gap analysis](gap-analysis.md) — what exists, what remains, and 
 | --- | --- |
 | **Gate A: MVP quality** | Complete |
 | **wp.org submission ready** | Gate A + readme review + plugin check + screenshots: 1–2 days |
-| **WP-04: fediverse:creator** | +3–4 days from current state |
-| **WP-05: JSON-LD schema** | +4–5 days after WP-04 |
+| **WP-04: fediverse:creator** | Implemented |
+| **WP-05: JSON-LD schema** | +4–5 days from current state |
 | **HM Authorship adapter** | +2–3 days after WP-05 |
 | **WP-06: AI consent** | +6–8 days after HM Authorship |
 | **Gate B': adapter-proven expansion** | After WP-04 + WP-05 + HM Authorship |

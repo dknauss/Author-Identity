@@ -11,9 +11,13 @@ use WP_UnitTestCase;
 use function Byline_Feed\get_byline_feed_profiles_for_user;
 use function Byline_Feed\get_byline_feed_now_url_for_user;
 use function Byline_Feed\get_byline_feed_uses_url_for_user;
+use function Byline_Feed\get_byline_feed_fediverse_for_user;
+use function Byline_Feed\get_byline_feed_ap_actor_url_for_user;
 use function Byline_Feed\normalize_byline_profiles;
+use function Byline_Feed\normalize_byline_feed_fediverse;
 use function Byline_Feed\parse_byline_profiles_textarea;
 use function Byline_Feed\render_author_meta_fields;
+use function Byline_Feed\register_author_meta;
 use function Byline_Feed\save_author_meta_fields;
 
 class Test_Author_Meta extends WP_UnitTestCase {
@@ -73,6 +77,14 @@ class Test_Author_Meta extends WP_UnitTestCase {
 		$result = normalize_byline_profiles( false );
 
 		$this->assertSame( array(), $result );
+	}
+
+	public function test_normalize_fediverse_handle_adds_leading_at(): void {
+		$this->assertSame( '@user@example.social', normalize_byline_feed_fediverse( 'user@example.social' ) );
+	}
+
+	public function test_normalize_fediverse_handle_rejects_invalid_format(): void {
+		$this->assertSame( '', normalize_byline_feed_fediverse( 'not a handle' ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -154,6 +166,49 @@ class Test_Author_Meta extends WP_UnitTestCase {
 		$this->assertSame( 'https://example.com/profile', $result[0]['href'] );
 	}
 
+	public function test_get_fediverse_returns_normalized_handle(): void {
+		$user_id = self::factory()->user->create();
+		update_user_meta( $user_id, 'byline_feed_fediverse', 'user@example.social' );
+
+		$this->assertSame( '@user@example.social', get_byline_feed_fediverse_for_user( $user_id ) );
+	}
+
+	public function test_get_ap_actor_url_returns_empty_when_activitypub_is_unavailable(): void {
+		$user_id = self::factory()->user->create();
+
+		$this->assertSame( '', get_byline_feed_ap_actor_url_for_user( $user_id ) );
+	}
+
+	public function test_get_ap_actor_url_can_be_overridden_by_filter(): void {
+		$user_id = self::factory()->user->create();
+
+		add_filter(
+			'byline_feed_ap_actor_url',
+			static function ( string $actor_url, int $filtered_user_id ) use ( $user_id ): string {
+				if ( $filtered_user_id !== $user_id ) {
+					return $actor_url;
+				}
+
+				return 'https://example.social/users/' . $filtered_user_id;
+			},
+			10,
+			2
+		);
+
+		$this->assertSame( 'https://example.social/users/' . $user_id, get_byline_feed_ap_actor_url_for_user( $user_id ) );
+
+		remove_all_filters( 'byline_feed_ap_actor_url' );
+	}
+
+	public function test_register_author_meta_exposes_fediverse_in_rest(): void {
+		register_author_meta();
+
+		$meta_keys = get_registered_meta_keys( 'user' );
+
+		$this->assertArrayHasKey( 'byline_feed_fediverse', $meta_keys );
+		$this->assertTrue( $meta_keys['byline_feed_fediverse']['show_in_rest'] );
+	}
+
 	// -------------------------------------------------------------------------
 	// render_author_meta_fields
 	// -------------------------------------------------------------------------
@@ -208,6 +263,19 @@ class Test_Author_Meta extends WP_UnitTestCase {
 		);
 
 		$this->assertStringContainsString( 'name="byline_feed_uses_url"', $output );
+	}
+
+	public function test_render_outputs_fediverse_field(): void {
+		$user_id = self::factory()->user->create();
+		$user    = get_user_by( 'id', $user_id );
+
+		$output = $this->capture_output(
+			static function () use ( $user ) {
+				render_author_meta_fields( $user );
+			}
+		);
+
+		$this->assertStringContainsString( 'name="byline_feed_fediverse"', $output );
 	}
 
 	// -------------------------------------------------------------------------
@@ -313,6 +381,39 @@ class Test_Author_Meta extends WP_UnitTestCase {
 		save_author_meta_fields( $user_id );
 
 		$this->assertSame( array(), get_byline_feed_profiles_for_user( $user_id ) );
+
+		$_POST = array();
+	}
+
+	public function test_save_stores_normalized_fediverse_handle(): void {
+		$user_id = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user_id );
+
+		$_POST = array(
+			'byline_feed_author_meta_nonce' => wp_create_nonce( 'byline_feed_author_meta' ),
+			'byline_feed_fediverse'         => 'user@example.social',
+		);
+
+		save_author_meta_fields( $user_id );
+
+		$this->assertSame( '@user@example.social', get_byline_feed_fediverse_for_user( $user_id ) );
+
+		$_POST = array();
+	}
+
+	public function test_save_deletes_fediverse_when_invalid_or_empty(): void {
+		$user_id = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user_id );
+		update_user_meta( $user_id, 'byline_feed_fediverse', '@user@example.social' );
+
+		$_POST = array(
+			'byline_feed_author_meta_nonce' => wp_create_nonce( 'byline_feed_author_meta' ),
+			'byline_feed_fediverse'         => 'not valid',
+		);
+
+		save_author_meta_fields( $user_id );
+
+		$this->assertSame( '', get_byline_feed_fediverse_for_user( $user_id ) );
 
 		$_POST = array();
 	}

@@ -122,6 +122,7 @@ class Test_Author_Contract extends WP_UnitTestCase {
 		$this->assertSame( '', $author->now_url );
 		$this->assertSame( '', $author->uses_url );
 		$this->assertSame( '', $author->fediverse );
+		$this->assertSame( '', $author->ap_actor_url );
 		$this->assertSame( '', $author->ai_consent );
 	}
 

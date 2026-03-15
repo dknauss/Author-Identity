@@ -13,7 +13,7 @@
 | WP-01: Scaffold & Adapters | All planned files | Core, CAP, PPA, contract tests | Implemented | CI-verified |
 | WP-02: RSS2, Atom & JSON Feed Output | All three output files | RSS2 + Atom + JSON Feed tests | Implemented | Automated coverage now exists for all three feed formats |
 | WP-03: Perspective Field | PHP + TSX present | PHPUnit coverage for feed output | Implemented | Built locally, needs ongoing editor QA |
-| WP-04: fediverse:creator | None | None | Not started | N/A |
+| WP-04: fediverse:creator | Output module + user meta/UI | Meta-tag, normalization, and profile-field tests | Implemented | Automated coverage exists; ActivityPub integration remains conservative |
 | WP-05: JSON-LD Schema | None | None | Not started | N/A |
 | WP-06: Rights & AI Consent | None | None | Not started | N/A |
 
@@ -25,10 +25,8 @@ Files still planned by the implementation strategy that do not yet exist:
 
 | File | Work package | Impact |
 | --- | --- | --- |
-| `inc/fediverse.php` | WP-04 | No `fediverse:creator` output yet |
 | `inc/schema.php` | WP-05 | No JSON-LD article/person graph output yet |
 | `inc/rights.php` | WP-06 | No rights / TDM / consent output yet |
-| `tests/phpunit/test-fediverse.php` | WP-04 | No automated coverage for fediverse output |
 | `tests/phpunit/test-schema.php` | WP-05 | No automated coverage for JSON-LD output |
 | `tests/phpunit/test-rights.php` | WP-06 | No automated coverage for rights output |
 
@@ -36,11 +34,18 @@ Files still planned by the implementation strategy that do not yet exist:
 
 ## Current gaps
 
-These are the meaningful remaining gaps after WP-01/WP-02 completion.
+These are the meaningful remaining gaps after WP-04 completion.
 
-### 1. WP-04, WP-05, and WP-06 are still entirely unimplemented
+### 1. WP-05 and WP-06 remain unimplemented; WP-04 is now in place
 
-The adapter layer already normalizes `fediverse` and `ai_consent` fields, but there is no user UI, meta registration, front-end output, or tests for fediverse attribution, JSON-LD, or rights/consent handling. The roadmap is still front-loaded around feeds and perspective only.
+WP-04 is no longer a gap. The plugin now has:
+
+- plugin-owned user meta and profile UI for fediverse handles
+- `fediverse:creator` meta tag output on singular content
+- a conservative `ap_actor_url` resolution field for linked WordPress users
+- PHPUnit coverage for handle normalization, profile UI, and meta-tag rendering
+
+The remaining output-channel gaps are now WP-05 and WP-06.
 
 `ap_actor_url` is now part of the official WP-04/WP-05 design boundary, but only as a cross-cutting field for those work packages. It is not a standalone roadmap item. `did:web:` remains vision-level future work and should not be treated as an active post-Gate-A deliverable.
 
@@ -117,9 +122,9 @@ Related scope rule:
 The remaining testing work is no longer "add more tests" in the abstract. The roadmap should keep naming the concrete testing tranches that matter:
 
 - WP-03 editor end-to-end coverage
-- WP-04 fediverse output tests
 - WP-05 JSON-LD graph tests
 - HM Authorship adapter unit + integration coverage
+- real ActivityPub-plugin integration coverage for `ap_actor_url`
 - optional later spec-conformance and round-trip parsing tests for Byline output
 
 ---
@@ -150,10 +155,10 @@ The following items appeared in earlier audits but are now resolved:
 | --- | --- | --- |
 | **Current state** | #3 (Gate A complete) | MVP quality gate is satisfied; keep CI green and maintain release discipline |
 | **Post-Gate-A hardening** | #2 (WP-03 editor automation), #9 (specific testing roadmap) | Close the main shipped-scope verification gap without reopening Gate A |
-| **Next adapter tranche** | #4 (Authorship support) | Implement immediately after WP-04/05; prior art exists, but it must be ported into the standalone plugin rather than merged directly |
+| **Next adapter tranche** | #4 (Authorship support) | Implement immediately after WP-05; prior art exists, but it must be ported into the standalone plugin rather than merged directly |
 | **Later roadmap work** | #1 (WP-06) | Follow the HM Authorship tranche; this is the most policy-sensitive work and should not jump ahead of the cleaner next adapter tranche |
 | **Pre-1.0 spec alignment** | Multi-author-per-item divergence, JSON Feed structure divergence, terminology drift (`organization` / `publication` / `publisher`) | Resolve the known Byline-spec structural and terminology issues with the spec author before calling the plugin a stable 1.0 implementation |
-| **Next product work** | #1 (WP-04/05) | After Gate A, the main remaining roadmap value is in the next output channels before the HM Authorship and WP-06 tranches |
+| **Next product work** | #1 (WP-05) | After WP-04, the main remaining roadmap value is in JSON-LD before the HM Authorship and WP-06 tranches |
 | **Process hygiene** | #6, #7 (track dev-tooling advisories, use changelog consistently) | Keeps maintenance and release quality disciplined without blocking feature work |
 
 ---

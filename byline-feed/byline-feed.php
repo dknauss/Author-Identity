@@ -40,6 +40,7 @@ require_once BYLINE_FEED_PLUGIN_DIR . 'inc/feed-common.php';
 require_once BYLINE_FEED_PLUGIN_DIR . 'inc/feed-rss2.php';
 require_once BYLINE_FEED_PLUGIN_DIR . 'inc/feed-atom.php';
 require_once BYLINE_FEED_PLUGIN_DIR . 'inc/feed-json.php';
+require_once BYLINE_FEED_PLUGIN_DIR . 'inc/fediverse.php';
 require_once BYLINE_FEED_PLUGIN_DIR . 'inc/perspective.php';
 
 // Bootstrap.
