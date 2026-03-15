@@ -110,12 +110,12 @@ Source-level inspection of the codebase ([plume-models/src/posts.rs](https://git
 **Lesson for our project:** Plume demonstrates that multi-author `attributedTo` is not theoretical — the database schema, the serialization code, the parsing code, and the cross-platform interop all exist. WordPress multi-author plugins already have the editorial UI that Plume lacks (assigning multiple authors to a post). What WordPress lacks is the federation layer that Plume has. A Byline identity plugin bridges this gap by taking WordPress's multi-author data and outputting it in the same patterns that Plume has already proven work across the fediverse.
 
 > [!NOTE]
-> **※ Sources:** docs.joinplu.me/federation/ (federation documentation), plume-models/src/posts.rs (source), plume-models/src/post_authors.rs (join table), socialhub.activitypub.rocks/t/differences-in-group-federation-between-projects/2472, socialhub.activitypub.rocks/t/how-to-implement-activitypub-for-a-blog-that-has-multiple-authors/2673.
+> **Sources:** docs.joinplu.me/federation/ (federation documentation), plume-models/src/posts.rs (source), plume-models/src/post_authors.rs (join table), socialhub.activitypub.rocks/t/differences-in-group-federation-between-projects/2472, socialhub.activitypub.rocks/t/how-to-implement-activitypub-for-a-blog-that-has-multiple-authors/2673.
 
 **Ghost's ActivityPub implementation.** Ghost (TryGhost/ActivityPub) is also grappling with multi-author federation — the pre-FEP discussion explicitly references Ghost's implementation alongside WordPress. Ghost's forum has active threads on how multi-author content appears in the fediverse, with the current behavior attributing all content to a single site-level account.
 
 > [!NOTE]
-> **※ Source:** forum.ghost.org/t/multiple-authors-shared-to-the-fediverse-what-does-that-look-like/59502.
+> **Source:** forum.ghost.org/t/multiple-authors-shared-to-the-fediverse-what-does-that-look-like/59502.
 
 **Current limitations.** The default Mastodon web UI still displays a single author for interaction purposes (replying, liking). The `fediverse:creator` tag currently only shows the first tag when multiple are present. The pre-FEP for co-author representation is in draft status and has not been formally proposed. PeerTube and other platforms that handle multi-contributor content use workarounds — attributing to a single primary account and mentioning others in body or metadata.
 
