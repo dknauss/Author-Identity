@@ -54,11 +54,13 @@ A plugin that populates both from the same WordPress author data gives writers a
 
 **Mastodon's `fediverse:creator` meta tag (July 2024).** Mastodon introduced a new OpenGraph-style meta tag for author attribution on shared links: `<meta name="fediverse:creator" content="@user@instance" />`. When a link is shared on Mastodon, the author byline becomes clickable, opening the author's fediverse profile directly in the app. This was explicitly designed for journalism — the launch partners were The Verge, MacStories, and MacRumors. The tag works with any fediverse account (Mastodon, Flipboard, Threads, WordPress with ActivityPub plugin, PeerTube, Pixelfed).
 
-**※ Source:** Eugen Rochko, "Highlighting journalism on Mastodon," blog.joinmastodon.org, July 2, 2024.
+> [!NOTE]
+> **※ Source:** Eugen Rochko, "[Highlighting journalism on Mastodon](https://blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/)," [blog.joinmastodon.org](https://blog.joinmastodon.org/), July 2, 2024.
 
 **Multi-author limitation acknowledged.** The same blog post states: "If multiple tags are present on the page, the first one will be displayed, but we may add support for showing multiple authors in the future. We intend to propose a specification draft for other ActivityPub platforms in the coming weeks." As of the June 2024 engineering update, Mastodon introduced an `authors` attribute in the REST API for link previews that "cannot contain more than one author on Mastodon, but this might change."
 
-**※ Sources:** blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/ and blog.joinmastodon.org/2024/07/trunk-tidbits-june-2024/ (PR #30846).
+> [!NOTE]
+> **※ Sources:** [blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/](blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/)  and [blog.joinmastodon.org/2024/07/trunk-tidbits-june-2024/](blog.joinmastodon.org/2024/07/trunk-tidbits-june-2024/) (PR #[30846](https://github.com/mastodon/mastodon/pull/30846)).
 
 **WordPress ActivityPub plugin — post author/object actor synchronization (closed).** [Issue #2353](https://github.com/Automattic/wordpress-activitypub/issues/2353) on the [Automattic/wordpress-activitypub](https://github.com/Automattic/wordpress-activitypub/) repo identified the fundamental problem: WordPress's `post_author` and the ActivityPub object's `actor`/`attributedTo` can diverge, especially with multi-author plugins like Co-Authors Plus. This led to [Discussion #2358](https://github.com/Automattic/wordpress-activitypub/discussions/2358), a draft pre-FEP (Fediverse Enhancement Proposal) titled "[Reassigning Actor and CoAuthor Representation for Federated CMS](https://socialhub.activitypub.rocks/t/pre-fep-reassigning-actor-and-coauthor-representation-for-federated-cms/8172/2)," which proposed new ActivityPub activity types (`Reattribute`, `Transfer`) for author reassignment and co-authorship.
 
