@@ -1,14 +1,15 @@
-# Author Identity Vision
+# Author Identity
 
 [![CI](https://github.com/dknauss/Author-Identity/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dknauss/Author-Identity/actions/workflows/ci.yml)
 [![License: GPL-2.0-or-later](https://img.shields.io/badge/License-GPL%202.0%2B-blue.svg)](LICENSE)
 [![PHP 7.4+](https://img.shields.io/badge/PHP-7.4%2B-777BB4?logo=php&logoColor=white)](byline-feed/composer.json)
+[![WordPress 6.0+](https://img.shields.io/badge/WordPress-6.0%2B-21759B?logo=wordpress&logoColor=white)](byline-feed/readme.txt)
 
 Structured author identity that travels with the work across feeds, search, the fediverse, and AI from one source of truth in WordPress.
 
 ## What this project is
 
-A WordPress plugin project centered on one normalized author-data layer in WordPress and multiple output channels.
+This repository ("Author Identity") houses the **[Byline Feed](byline-feed/)** WordPress plugin, which implements the [Byline extension vocabulary](https://bylinespec.org) plus additional author-identity output channels. A normalized author-data layer in WordPress drives multiple outputs.
 
 Current shipped scope:
 
@@ -50,6 +51,7 @@ The current implementation focus is the `byline-feed` plugin:
 | Vision | [author-identity-vision.md](docs/vision/author-identity-vision.md): Full project vision and positioning |
 | Planning | [implementation-spec.md](Implementation%20Strategy/implementation-spec.md): Authoritative plugin implementation spec, roadmap, and release gates<br>[byline-spec-plan.md](docs/planning/byline-spec-plan.md): Byline spec assessment — what the plugin validates, current divergences, and pre-1.0 priorities<br>[byline-adoption-strategy.md](docs/planning/byline-adoption-strategy.md): Adoption strategy — audiences, workstreams, and post-Gate-A product direction |
 | Research | [docs/README.md](docs/README.md): Documentation tree index<br>[docs/research/README.md](docs/research/README.md): Curated research index with current vs exploratory tiers<br>[multi-author-matrix.md](docs/research/current/multi-author-matrix.md): Comparison of WordPress multi-author systems<br>[protocol-coverage-map.md](docs/research/current/protocol-coverage-map.md): Protocol coverage by output channel<br>[architecture.md](docs/research/current/architecture.md): HM Authorship architecture notes<br>[landscape.md](docs/research/current/landscape.md): Plugin ecosystem and historical lineage<br>[metadata-models-for-publishers.md](docs/research/current/metadata-models-for-publishers.md): WP-05 JSON-LD background and longer-term publication metadata context |
+| Playground | [playground/README.md](playground/README.md): Playground demo index<br>[playground/output-demo/README.md](playground/output-demo/README.md): Stable output-demo bundle for feeds, `fediverse:creator`, and JSON-LD |
 | Quality | [ASSESSMENT.md](docs/quality/ASSESSMENT.md): Project assessment and recommendations<br>[TEST_COVERAGE_MATRIX.md](docs/quality/TEST_COVERAGE_MATRIX.md): Coverage status and remaining gaps<br>[TDD_TESTING_STANDARD.md](docs/quality/TDD_TESTING_STANDARD.md): Testing workflow and definition of done |
 | Work Packages | [wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md): Detailed delivery specs by package<br>[gap-analysis.md](Implementation%20Strategy/gap-analysis.md): Audit of code against the specs<br>[implementation-spec.md](Implementation%20Strategy/implementation-spec.md): Supplemental strategy details and cross-cutting concerns |
 | Legacy | [Byline RSS Spec Adoption/](Byline%20RSS%20Spec%20Adoption/): Earlier planning and legacy positioning documents |
@@ -140,6 +142,27 @@ Development-tooling note:
 | PHPCS | WordPress Coding Standards |
 | Node build | Asset build validation |
 | Workflow | [.github/workflows/ci.yml](.github/workflows/ci.yml) |
+
+## Playground
+
+The current Playground strategy is intentionally two-tiered:
+
+- [playground/output-demo/](playground/output-demo/) is the stable source-of-truth bundle for demonstrating shipped outputs
+- a later adapter-demo blueprint will showcase real Co-Authors Plus and PublishPress Authors integration without burdening the primary public demo
+
+Use the output-demo bundle locally with:
+
+```bash
+npx @wp-playground/cli@latest server --blueprint=playground/output-demo/blueprint.json
+```
+
+Build a shareable snapshot ZIP with:
+
+```bash
+playground/bin/build-output-demo-snapshot.sh
+```
+
+The public `Try in Playground` CTA should point to a snapshot built from the output-demo bundle, not directly to a mutable branch install.
 
 ## Governance
 

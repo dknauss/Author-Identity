@@ -183,6 +183,37 @@ The [vision document](../docs/vision/author-identity-vision.md) discusses capabi
 - **Guest author management.** The plugin does not create, edit, authenticate, or manage guest authors. It reads them from whatever multi-author system is active. Security concerns about guest author login, password reset, and capability mapping belong to the upstream multi-author plugins (CAP, PPA, HM Authorship), not to this plugin.
 - **Full social graph / relationship management.** The plugin emits relationship metadata (co-authorship, organizational affiliation, profile links) in its output channels. It does not maintain a relationship database, import social graph data, or replicate IndieWeb social reader functionality.
 
+## Playground demo strategy
+
+Playground is now part of the project's reproducibility story, but it should stay narrowly scoped.
+
+### Primary target: output demo
+
+The first stable Playground target is an output-demo bundle:
+
+- installs `byline-feed`
+- injects deterministic normalized authors via a small demo mu-plugin
+- seeds demo content for:
+  - RSS2 output
+  - Atom output
+  - JSON Feed output
+  - `fediverse:creator` meta tags
+  - JSON-LD `Article` + ordered `Person` schema
+
+This target exists to demonstrate shipped outputs, not upstream adapter behavior. It is the right foundation for a later public `Try in Playground` CTA because it avoids dependency on third-party plugin setup and keeps output deterministic across runs.
+
+### Secondary later target: adapter demo
+
+A second Playground target should come later:
+
+- adapter-demo blueprint for real Co-Authors Plus and PublishPress Authors behavior
+
+This is a roadmap/backlog item, not the primary public demo. It should remain secondary because:
+
+- it depends on third-party plugin installation and setup
+- adapter drift is better caught first by CI and local integration verification
+- the public Playground path should optimize for stable output inspection, not for reproducing every plugin integration state
+
 ## Filter and hook API
 
 The plugin exposes the following public API for theme and plugin developers:

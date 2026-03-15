@@ -53,6 +53,7 @@ byline-feed/.phpunit.result.cache
 byline-feed/.tmp/
 byline-feed/test-results/
 byline-feed/playwright-report/
+playground/dist/
 
 # macOS Finder metadata
 .DS_Store

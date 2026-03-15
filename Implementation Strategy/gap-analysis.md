@@ -129,6 +129,16 @@ The remaining testing work is no longer "add more tests" in the abstract. The ro
 - classic editor metabox browser coverage
 - optional later spec-conformance and round-trip parsing tests for Byline output
 
+### 9. Playground roadmap should stay two-tiered
+
+The repository now has a stable Playground output-demo bundle. That should remain the primary demo target because it showcases shipped outputs from deterministic normalized-author fixtures rather than from fragile third-party plugin setup.
+
+The later Playground backlog item should be separate:
+
+- adapter-demo blueprint showcasing real Co-Authors Plus and PublishPress Authors behavior
+
+That later target is useful, but it should stay secondary. The public demo path should optimize for stable inspection of RSS2, Atom, JSON Feed, `fediverse:creator`, and JSON-LD output. Adapter realism belongs in CI, local integration verification, and a later specialized Playground bundle.
+
 ---
 
 ## What's no longer a gap
@@ -143,6 +153,7 @@ The following items appeared in earlier audits but are now resolved:
 - JSON Feed now has automated coverage for document shape, author deduplication, per-item roles, perspective output, omission behavior, and feed metadata.
 - The perspective UI has been manually verified on the local Studio site, which surfaced and corrected an editor asset enqueue bug.
 - The block editor perspective panel now has committed Playwright coverage via a self-contained `wp-env` harness.
+- A stable Playground output-demo bundle now exists for deterministic inspection of shipped outputs; the CAP/PPA adapter-demo bundle remains later backlog work.
 - Atom now has filter parity with RSS2 (renamed to `byline_feed_atom_entry_xml`).
 - Feed layer code duplication resolved — shared `output_person()` in `feed-common.php` (R-1).
 - Atom filter naming resolved — format-specific filter names (R-2).
@@ -158,7 +169,7 @@ The following items appeared in earlier audits but are now resolved:
 | Priority | Gaps | Rationale |
 | --- | --- | --- |
 | **Current state** | #3 (Gate A complete) | MVP quality gate is satisfied; keep CI green and maintain release discipline |
-| **Post-Gate-A hardening** | #8 (specific testing roadmap) | Keep extending test depth without reopening Gate A |
+| **Post-Gate-A hardening** | #8, #9 (specific testing roadmap and staged Playground demos) | Keep extending verification depth and demo quality without reopening Gate A |
 | **Next adapter tranche** | #4 (Authorship support) | Implement immediately after the now-shipped WP-05 tranche; prior art exists, but it must be ported into the standalone plugin rather than merged directly |
 | **Later roadmap work** | #1 (WP-06) | Follow the HM Authorship tranche; this is the most policy-sensitive work and should not jump ahead of the cleaner next adapter tranche |
 | **Pre-1.0 spec alignment** | Multi-author-per-item divergence, JSON Feed structure divergence, terminology drift (`organization` / `publication` / `publisher`) | Resolve the known Byline-spec structural and terminology issues with the spec author before calling the plugin a stable 1.0 implementation |

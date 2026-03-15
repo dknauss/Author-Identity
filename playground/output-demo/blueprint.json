@@ -1,0 +1,41 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "Byline Feed Output Demo",
+    "description": "Installs Byline Feed and injects deterministic multi-author output on the default WordPress sample post and feeds.",
+    "author": "Dan Knauss"
+  },
+  "landingPage": "/?p=1",
+  "preferredVersions": {
+    "wp": "6.7",
+    "php": "8.3"
+  },
+  "features": {
+    "networking": true
+  },
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "git:directory",
+        "url": "https://github.com/dknauss/Author-Identity",
+        "ref": "main",
+        "refType": "branch",
+        "path": "byline-feed"
+      },
+      "options": {
+        "activate": true,
+        "targetFolderName": "byline-feed"
+      }
+    },
+    {
+      "step": "mkdir",
+      "path": "/wordpress/wp-content/mu-plugins"
+    },
+    {
+      "step": "writeFile",
+      "path": "/wordpress/wp-content/mu-plugins/byline-feed-playground-demo.php",
+      "data": "<?php\n/**\n * Plugin Name: Byline Feed Playground Demo\n * Description: Deterministic author fixtures for the Byline Feed output-demo blueprint.\n */\n\ndefined( 'ABSPATH' ) || exit;\n\nadd_filter(\n\t'byline_feed_authors',\n\tstatic function ( array $authors, WP_Post $post ): array {\n\t\tif ( 'post' !== $post->post_type ) {\n\t\t\treturn $authors;\n\t\t}\n\n\t\treturn array(\n\t\t\t(object) array(\n\t\t\t\t'id'           => 'jane-editor',\n\t\t\t\t'display_name' => 'Jane Editor',\n\t\t\t\t'description'  => 'Investigative editor covering publishing systems and attribution.',\n\t\t\t\t'url'          => 'https://example.org/authors/jane-editor',\n\t\t\t\t'avatar_url'   => 'https://secure.gravatar.com/avatar/11111111111111111111111111111111?s=96&d=identicon&r=g',\n\t\t\t\t'user_id'      => 0,\n\t\t\t\t'role'         => 'staff',\n\t\t\t\t'is_guest'     => false,\n\t\t\t\t'profiles'     => array(\n\t\t\t\t\tarray(\n\t\t\t\t\t\t'href' => 'https://example.org/authors/jane-editor',\n\t\t\t\t\t\t'rel'  => 'author',\n\t\t\t\t\t),\n\t\t\t\t\tarray(\n\t\t\t\t\t\t'href' => 'https://mastodon.example/@janeeditor',\n\t\t\t\t\t\t'rel'  => 'me',\n\t\t\t\t\t),\n\t\t\t\t),\n\t\t\t\t'now_url'      => 'https://example.org/now',\n\t\t\t\t'uses_url'     => 'https://example.org/uses',\n\t\t\t\t'fediverse'    => '@janeeditor@mastodon.example',\n\t\t\t\t'ap_actor_url' => 'https://mastodon.example/users/janeeditor',\n\t\t\t\t'ai_consent'   => '',\n\t\t\t),\n\t\t\t(object) array(\n\t\t\t\t'id'           => 'sam-guest',\n\t\t\t\t'display_name' => 'Sam Guest',\n\t\t\t\t'description'  => 'Guest contributor focused on AI policy and publishing rights.',\n\t\t\t\t'url'          => '',\n\t\t\t\t'avatar_url'   => 'https://secure.gravatar.com/avatar/22222222222222222222222222222222?s=96&d=identicon&r=g',\n\t\t\t\t'user_id'      => 0,\n\t\t\t\t'role'         => 'guest',\n\t\t\t\t'is_guest'     => true,\n\t\t\t\t'profiles'     => array(\n\t\t\t\t\tarray(\n\t\t\t\t\t\t'href' => 'https://social.example/@samguest',\n\t\t\t\t\t\t'rel'  => 'me',\n\t\t\t\t\t),\n\t\t\t\t),\n\t\t\t\t'now_url'      => '',\n\t\t\t\t'uses_url'     => '',\n\t\t\t\t'fediverse'    => '@samguest@social.example',\n\t\t\t\t'ap_actor_url' => '',\n\t\t\t\t'ai_consent'   => '',\n\t\t\t),\n\t\t);\n\t},\n\t10,\n\t2\n);\n"
+    }
+  ]
+}

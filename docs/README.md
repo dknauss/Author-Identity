@@ -1,6 +1,6 @@
 # Documentation Index
 
-This directory contains the maintained project documentation for the Author Identity Vision repository.
+This directory contains the maintained project documentation for the Author Identity repository.
 
 ## Main sections
 
