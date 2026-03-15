@@ -1,157 +1,181 @@
 # Byline Spec Assessment and Implementation Plan
 
-## What is Byline?
+## Purpose
 
-Byline (bylinespec.org) is an open specification (v0.1.0, January 2026, CC0 licensed) that extends RSS 2.0, Atom, and JSON Feed with structured author identity, context, and content perspective metadata. It was created by Terry Godier to address "content collapse" — the loss of context when diverse content sources arrive in a unified feed reader stream.
+This document tracks how the standalone `byline-feed` plugin relates to the Byline spec as it exists today.
 
-For how existing multi-author plugins handle (or fail to handle) feed output, see [multi-author-matrix.md § Feed output comparison](../research/current/multi-author-matrix.md#feed-output-comparison). For how Byline compares to every other protocol that carries author identity, see [protocol-coverage-map.md](../research/current/protocol-coverage-map.md).
+It is not the authoritative execution roadmap. Its job is to clarify:
 
-The spec adds an XML namespace (`https://bylinespec.org/1.0`) with elements for:
+- what the plugin already proves about the spec
+- where the plugin currently diverges from the spec
+- which spec questions matter before calling the plugin a stable 1.0 implementation
+- how HM Authorship fits into later adapter work without redefining the near-term roadmap
 
-- **`byline:person`**: structured author identity (name, bio, avatar, profile links, /now page, /uses page, theme colors).
-- **`byline:org`**: organization metadata (name, URL, type).
-- **`byline:author ref`**: per-item author attribution referencing channel-level person definitions.
-- **`byline:role`**: author's relationship to the content (creator, editor, guest, staff, contributor, bot).
-- **`byline:perspective`**: content intent type (personal, reporting, analysis, official, sponsored, satire, review, tutorial, etc.).
-- **`byline:affiliation`**: conflict-of-interest disclosure (employer, investor, sponsor, etc.).
-- **`byline:theme`**: author brand colors (optional, hint-only).
+For current execution order, use [implementation-spec.md](implementation-spec.md) and [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md).
 
-Current status: 4 GitHub stars, 3 commits, zero implementations, zero feed reader support. Very early stage.
+## Byline in this project
 
-## Why Authorship is a natural fit
+The project began as a strategy for creating the first practical WordPress implementation of the Byline spec. That objective is now partially realized:
 
-Authorship's data model maps cleanly to Byline's elements because every author is a `WP_User`:
+- the plugin emits Byline data in RSS2, Atom, and JSON Feed
+- the plugin is tested and CI-verified for core WordPress, Co-Authors Plus, and PublishPress Authors
+- the plugin has a consumer-facing output reference
 
-| Byline element | Authorship data source | Notes |
+That changes the nature of this document. It is no longer "could this be implemented?" It is "what has the implementation taught us about the spec, and what still needs alignment?"
+
+## What the current plugin validates
+
+### 1. The adapter model is viable
+
+WordPress multi-author data can be normalized once and routed to multiple feed formats from a common contract.
+
+That is the most important architectural proof point in the repository:
+
+- upstream authorship systems differ significantly
+- the output layer can still stay format-focused and additive
+- the plugin does not need to own author management to emit richer metadata
+
+### 2. Byline works as an additive feed extension
+
+The current implementation preserves standard feed elements while adding Byline metadata alongside them.
+
+This matters because it confirms the core adoption premise:
+
+- existing feed consumers are not broken
+- richer identity can be layered onto ordinary feeds
+- Byline output can be shipped before reader support exists
+
+### 3. Perspective is implementable in real editorial workflows
+
+The spec's `perspective` concept is not just theoretical. The plugin already demonstrates one practical way to collect and emit it from WordPress.
+
+That is meaningful because `perspective` is one of the strongest parts of the spec's value proposition and one of the least likely things to appear automatically from upstream authorship plugins.
+
+## Current spec-alignment issues
+
+These are the important issues that remain before a stable 1.0 positioning.
+
+### 1. Multi-author-per-item structure
+
+This is the clearest structural divergence.
+
+The current plugin emits repeated author/role pairs for multi-author items, but the current Byline spec is effectively singular at the item level. The implementation is useful, but the binding is positional rather than structurally explicit.
+
+This should be treated as:
+
+- a known current divergence
+- a legitimate implementation finding
+- something to resolve with the spec author before the plugin claims stable conformance
+
+### 2. JSON Feed structure
+
+The plugin's current JSON Feed output does not match the spec repo's example model exactly.
+
+This is not a minor wording issue. It affects how author references are represented in JSON and therefore how a Byline-aware consumer would parse the feed.
+
+This should also be resolved before stable 1.0 positioning.
+
+### 3. Terminology drift
+
+The spec still risks confusion around:
+
+- `organization`
+- `publication`
+- `publisher`
+
+The implementation experience has strengthened the case that these should not slide into each other casually in prose, because they affect how implementors think about entities, roles, and works.
+
+## What is not a spec problem
+
+The implementation has also clarified several things that should not be blamed on the Byline spec itself:
+
+- unsupported-plugin behavior on WordPress sites that do not use supported adapters
+- the current fediverse `attributedTo` ownership/authorship problem
+- SEO-plugin coexistence problems that belong to the WordPress ecosystem rather than the feed spec
+
+Those matter to the project, but they are not reasons to contort the Byline spec.
+
+## Relationship to the current roadmap
+
+The active post-Gate-A sequence is:
+
+1. WP-04 `fediverse:creator`
+2. WP-05 JSON-LD
+3. HM Authorship adapter tranche
+4. WP-06 rights and AI consent
+
+This spec-plan document should not override that order.
+
+Its role is narrower:
+
+- keep the Byline-specific implementation work honest
+- document the current divergences
+- make sure spec feedback is based on running code rather than conjecture
+
+## HM Authorship in this context
+
+HM Authorship still matters to the Byline story, but not because it changes the feed roadmap immediately.
+
+It matters because:
+
+- its upstream API is clean
+- its data model maps closely to the normalized author contract
+- it is likely the least awkward later adapter target
+
+That makes it a strong next adapter tranche after WP-04/WP-05. It does not make Authorship the center of the current spec plan.
+
+### Why Authorship remains strategically useful
+
+| Byline concept | Authorship source | Notes |
 | --- | --- | --- |
-| `byline:person.name` | `WP_User->display_name` | Direct |
-| `byline:person.context` | `WP_User->description` | Cap at 280 chars per spec recommendation |
-| `byline:person.url` | `WP_User->user_url` | Direct |
-| `byline:person.avatar` | `get_avatar_url( $user->ID )` | Direct |
-| `byline:person.id` | User slug or ID | Unique within feed |
-| `byline:author ref` | `get_authors( $post )` | Ordered array already available |
-| `byline:role` | WordPress role mapping | `guest-author` → `guest`, `administrator`/`editor` → `staff`, etc. |
-| `byline:profile` | User meta (social URLs) | Requires convention for meta keys |
-| `byline:perspective` | **Not available** | Requires new post meta or taxonomy |
-| `byline:org` | Site-level settings | `get_bloginfo()` for single-site |
-| `byline:affiliation` | **Not available** | Requires new per-post or per-author meta |
-| `byline:person.now` | User meta | Requires convention for meta key |
-| `byline:person.uses` | User meta | Requires convention for meta key |
-| `byline:theme` | User meta | Optional |
+| person name | `WP_User->display_name` | direct |
+| person context | `WP_User->description` | direct |
+| person URL | `WP_User->user_url` | direct |
+| avatar | `get_avatar_url()` | direct |
+| author ordering | `Authorship\\get_authors( $post )` | clean ordered array |
+| role mapping | WordPress capabilities / guest-role logic | project-owned mapping |
 
-Taxonomy-based plugins (PPA, CAP) would need to resolve term meta → profile data, handle the user/term duality, and work around the inconsistent object types. Authorship just calls `get_userdata()`.
+Compared with taxonomy-driven plugins, Authorship still offers the cleanest upstream path once that tranche begins.
 
-## Current feed implementation gap
+## Implementation stance going forward
 
-Authorship's entire feed integration is one function:
+### Keep one standalone plugin
 
-```php
-function filter_the_author_for_rss( ?string $display_name ) : ?string {
-    if ( ! is_feed( 'rss2' ) ) {
-        return $display_name;
-    }
-    $post = get_post();
-    if ( ! $post ) {
-        return $display_name;
-    }
-    return get_author_names( $post );
-}
-```
+The current project direction is a single standalone plugin with one normalized author layer and multiple outputs. That means this document should no longer recommend companion-module-first architecture as the default path.
 
-This only handles RSS2, not Atom. It only outputs a plain-text name list. No structured metadata.
+### Keep the roadmap focused
 
-## Implementation plan
+Byline-spec work should not be allowed to expand the near-term scope into:
 
-### Recommended approach: companion module
+- broader graph modeling
+- generic identity frameworks
+- `did:web:` implementation
+- ActivityPub protocol redesign
 
-Implement as a separate file (`inc/byline-feed.php`) conditionally loaded in `plugin.php`, or as an independent companion plugin. This keeps the core lean and lets the Byline implementation evolve independently.
+Those belong to the vision and research layers until the current roadmap is further along.
 
-### Phase 1: structural elements (data already available)
+### Keep spec evidence concrete
 
-Hook into WordPress feed actions to output Byline namespace and elements using data Authorship already has.
+The strongest future use of this document is as a record of concrete implementation evidence:
 
-**WordPress feed hooks to use:**
+- what worked
+- what required interpretation
+- what diverged
+- what upstream clarification would remove ambiguity
 
-- `rss2_ns` — add `xmlns:byline="https://bylinespec.org/1.0"` to the `<rss>` element.
-- `rss2_head` — output `<byline:contributors>` with `<byline:person>` for each author who contributed to posts in the current feed query.
-- `rss2_item` — output `<byline:author ref="..."/>` and `<byline:role>` per item.
-- `atom_ns`, `atom_head`, `atom_entry` — parallel implementation for Atom feeds.
+## Pre-1.0 Byline-specific priorities
 
-**Minimal RSS2 output example:**
+1. Maintain the current feed implementation as the reference implementation candidate.
+2. Keep the output reference and tests aligned with shipped behavior.
+3. Continue spec-author discussion on:
+   - multi-author-per-item structure
+   - JSON Feed structure
+   - terminology drift
+4. Treat stable 1.0 wording as contingent on those issues being resolved or explicitly accepted as conscious divergences.
 
-```xml
-<rss version="2.0" xmlns:byline="https://bylinespec.org/1.0">
-  <channel>
-    <byline:contributors>
-      <byline:person id="jdoe">
-        <byline:name>Jane Doe</byline:name>
-        <byline:context>Staff writer covering technology.</byline:context>
-        <byline:url>https://example.com/author/jdoe</byline:url>
-        <byline:avatar>https://example.com/avatars/jdoe.jpg</byline:avatar>
-      </byline:person>
-    </byline:contributors>
+## Related documents
 
-    <item>
-      <title>Example Post</title>
-      <byline:author ref="jdoe"/>
-      <byline:role>staff</byline:role>
-    </item>
-  </channel>
-</rss>
-```
-
-**Role mapping logic:**
-
-```php
-function get_byline_role( WP_User $user ) : string {
-    if ( in_array( GUEST_ROLE, $user->roles, true ) ) {
-        return 'guest';
-    }
-    if ( user_can( $user, 'edit_others_posts' ) ) {
-        return 'staff';
-    }
-    return 'contributor';
-}
-```
-
-Filterable via `apply_filters( 'authorship_byline_role', $role, $user, $post )`.
-
-### Phase 2: perspective (requires new data)
-
-The `byline:perspective` element is the spec's most important feature for addressing content collapse. It requires editorial metadata that WordPress doesn't natively provide.
-
-Options for storage:
-
-- **Post meta** (`_authorship_perspective`): simplest, least queryable. Sufficient for feed output.
-- **Taxonomy** (`authorship_perspective`): more queryable, allows filtering by perspective type. Heavier.
-- **Post format mapping**: creative but lossy — WordPress post formats don't cover the Byline perspective vocabulary.
-
-Recommendation: start with post meta and a block editor sidebar control. Add a filter (`authorship_byline_perspective`) so themes can compute perspective from other data (categories, custom fields, etc.).
-
-### Phase 3: extended identity (progressive enhancement)
-
-Add support for `byline:profile`, `byline:now`, `byline:uses` using user meta fields with a defined key convention:
-
-- `authorship_profile_mastodon`, `authorship_profile_github`, etc.
-- `authorship_now_url`
-- `authorship_uses_url`
-
-Register these fields on the user profile edit screen. Output them in `byline:person` elements when present.
-
-### Phase 4: affiliation and organization
-
-These require the most new UI work and are editorially complex. Defer until the spec stabilizes and feed reader adoption provides validation signal.
-
-## Strategic considerations
-
-Being the first CMS plugin to implement the Byline spec would give this fork influence over how the spec evolves. The spec is CC0 licensed and at v0.1.0 — early implementors always shape specifications.
-
-The implementation cost is low for Phase 1 (a few dozen lines hooking into existing WordPress feed actions with data Authorship already has). The risk is also low since Byline elements are ignored by feed readers that don't support them — standard `<author>` elements should always be present alongside Byline data for backward compatibility.
-
-The Byline spec explicitly states: "Always include standard elements for maximum compatibility. Byline is additive."
-
-## Cross-plugin standalone approach
-
-The Authorship-specific integration described above is one path. A broader strategy for spec adoption would be a standalone wp.org plugin that works with any multi-author plugin (Co-Authors Plus, PublishPress Authors, Molongui, or no plugin at all) via an adapter pattern. This approach maximizes the number of feeds emitting Byline data, which is the critical supply-side requirement for feed reader adoption.
-
-See **[Byline Feed Plugin — Cross-Plugin Adoption Strategy](byline-adoption-strategy.md)** for the full analysis, including the addressable audience (~40K+ multi-author sites), adapter architecture, per-plugin integration details, and the phased adoption roadmap.
+- [implementation-spec.md](implementation-spec.md) — active roadmap summary
+- [Implementation Strategy/implementation-spec.md](../../Implementation%20Strategy/implementation-spec.md) — work packages, release gates, cross-cutting concerns
+- [Implementation Strategy/gap-analysis.md](../../Implementation%20Strategy/gap-analysis.md) — current status and post-Gate-A priorities
+- [byline-adoption-strategy.md](byline-adoption-strategy.md) — ecosystem strategy beyond spec conformance

@@ -64,8 +64,10 @@
 | fediverse:creator meta tag output | **Gap** | Missing file | `inc/fediverse.php` and tests do not exist. |
 | fediverse handle normalization | **Gap** | Missing file | No code exists. |
 | fediverse user profile field | **Gap** | Missing file | No UI exists. |
+| ActivityPub actor URL resolution for WP-04/05 | **Gap** | Missing file | `ap_actor_url` is now an official cross-cutting field for WP-04/WP-05, but no code or tests exist. |
 | JSON-LD Article + Person schema | **Gap** | Missing file | `inc/schema.php` and tests do not exist. |
 | JSON-LD sameAs from profiles | **Gap** | Missing file | No code exists. |
+| JSON-LD sameAs extension with `ap_actor_url` | **Gap** | Missing file | No code exists. `did:web:` is intentionally excluded from the active test matrix. |
 | JSON-LD Yoast/Rank Math detection | **Gap** | Missing file | No code exists. |
 | AI consent resolution logic | **Gap** | Missing file | `inc/rights.php` and tests do not exist. |
 | AI consent HTML meta output | **Gap** | Missing file | No code exists. |
@@ -77,9 +79,10 @@
 
 1. **Add browser or end-to-end coverage for the perspective panel.** This is the main remaining shipped-scope verification gap.
 2. **Add `test-fediverse.php` when WP-04 starts.** Treat fediverse output tests as part of the feature, not a follow-up.
-3. **Add `test-schema.php` when WP-05 starts.** Cover graph shape, multi-author output, and coexistence with other schema providers.
+3. **Add `test-schema.php` when WP-05 starts.** Cover graph shape, multi-author output, `ap_actor_url` handling, and coexistence with other schema providers.
 4. **Add HM Authorship adapter tests when that tranche starts.** Unit normalization + real-plugin integration coverage should land together.
-5. **Optional later hardening:** add deeper Byline spec-conformance and round-trip parsing tests for feed output.
+5. **Add `test-rights.php` when WP-06 starts.** Treat rights/consent coverage as part of the work package from day one, after the HM Authorship tranche.
+6. **Optional later hardening:** add deeper Byline spec-conformance and round-trip parsing tests for feed output.
 
 ## Quality target
 

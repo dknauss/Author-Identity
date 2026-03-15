@@ -4,7 +4,22 @@ Structured author identity that travels with the work across feeds, search, the 
 
 ## What this project is
 
-A WordPress plugin that normalizes author identity data from any multi-author plugin (Co-Authors Plus, PublishPress Authors, Molongui, HM Authorship, core WP) and routes it to multiple output channels: Byline RSS/Atom feeds, JSON-LD schema, `fediverse:creator` meta tags, TDM/AI consent headers. One adapter layer, many outputs.
+A WordPress plugin project centered on one normalized author-data layer in WordPress and multiple output channels.
+
+Current shipped scope:
+
+- normalized author resolution for core WordPress, Co-Authors Plus, and PublishPress Authors
+- Byline output in RSS2, Atom, and JSON Feed
+- perspective storage and editor UI
+
+Next planned tranches:
+
+- WP-04 `fediverse:creator`
+- WP-05 JSON-LD
+- HM Authorship adapter support
+- WP-06 rights and AI-consent output
+
+Longer-range identity work such as `did:web:` remains in the vision/research layer, not the active roadmap.
 
 **The mental model:** WordPress is a Personal Data Server for authors. The author's WP profile is their everything folder. The plugin makes that PDS speak the open web's formats. Output channels are reactive to the normalized author data — none of them own it.
 
@@ -21,13 +36,14 @@ The current implementation focus is the `byline-feed` plugin:
 - Emit structured Byline metadata in RSS2, Atom, and JSON Feed.
 - Expose content perspective metadata for feed consumers.
 - Preserve standard feed elements so Byline output remains additive.
+- Prepare the next output and adapter tranches without expanding the active roadmap into broader identity-framework work.
 
 ## Documentation map
 
 | Area | Items |
 | --- | --- |
 | Vision | [author-identity-vision.md](docs/vision/author-identity-vision.md): Full project vision and positioning |
-| Planning | [implementation-spec.md](docs/planning/implementation-spec.md): Plugin implementation spec and roadmap<br>[byline-spec-plan.md](docs/planning/byline-spec-plan.md): Byline extension assessment and implementation plan<br>[byline-adoption-strategy.md](docs/planning/byline-adoption-strategy.md): Adoption and ecosystem strategy |
+| Planning | [implementation-spec.md](Implementation%20Strategy/implementation-spec.md): Authoritative plugin implementation spec, roadmap, and release gates<br>[byline-spec-plan.md](docs/planning/byline-spec-plan.md): Byline spec assessment — what the plugin validates, current divergences, and pre-1.0 priorities<br>[byline-adoption-strategy.md](docs/planning/byline-adoption-strategy.md): Adoption strategy — audiences, workstreams, and post-Gate-A product direction |
 | Research | [docs/README.md](docs/README.md): Documentation tree index<br>[docs/research/README.md](docs/research/README.md): Curated research index with current vs exploratory tiers<br>[multi-author-matrix.md](docs/research/current/multi-author-matrix.md): Comparison of WordPress multi-author systems<br>[protocol-coverage-map.md](docs/research/current/protocol-coverage-map.md): Protocol coverage by output channel<br>[architecture.md](docs/research/current/architecture.md): HM Authorship architecture notes<br>[landscape.md](docs/research/current/landscape.md): Plugin ecosystem and historical lineage<br>[metadata-models-for-publishers.md](docs/research/current/metadata-models-for-publishers.md): WP-05 JSON-LD background and longer-term publication metadata context |
 | Quality | [ASSESSMENT.md](docs/quality/ASSESSMENT.md): Project assessment and recommendations<br>[TEST_COVERAGE_MATRIX.md](docs/quality/TEST_COVERAGE_MATRIX.md): Coverage status and remaining gaps<br>[TDD_TESTING_STANDARD.md](docs/quality/TDD_TESTING_STANDARD.md): Testing workflow and definition of done |
 | Work Packages | [wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md): Detailed delivery specs by package<br>[gap-analysis.md](Implementation%20Strategy/gap-analysis.md): Audit of code against the specs<br>[implementation-spec.md](Implementation%20Strategy/implementation-spec.md): Supplemental strategy details and cross-cutting concerns |
@@ -39,7 +55,7 @@ The current implementation focus is the `byline-feed` plugin:
 | --- | --- |
 | Implemented | adapter interface plus core, Co-Authors Plus, and PublishPress Authors adapters<br>RSS2, Atom, and JSON Feed Byline output, including `profile` / `now` / `uses` for linked WordPress users via plugin-owned meta<br>content perspective storage and editor UI<br>runtime validation for the normalized author contract<br>PHPUnit, PHPCS, and GitHub Actions CI scaffolding |
 | Not yet implemented | `fediverse:creator` output<br>multi-author JSON-LD output<br>AI consent and rights output<br>Molongui and HM Authorship adapters |
-| Primary references | [byline-feed/](byline-feed/)<br>[byline-feed/docs/output-reference.md](byline-feed/docs/output-reference.md)<br>[docs/planning/implementation-spec.md](docs/planning/implementation-spec.md)<br>[wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md) |
+| Primary references | [byline-feed/](byline-feed/)<br>[byline-feed/docs/output-reference.md](byline-feed/docs/output-reference.md)<br>[implementation-spec.md](Implementation%20Strategy/implementation-spec.md)<br>[wp-01.md](Implementation%20Strategy/wp-01.md) to [wp-06.md](Implementation%20Strategy/wp-06.md) |
 
 ## Plugin layout
 
@@ -57,8 +73,11 @@ byline-feed/
 |   |-- class-adapter-cap.php
 |   |-- class-adapter-ppa.php
 |   |-- namespace.php
+|   |-- feed-common.php
 |   |-- feed-rss2.php
 |   |-- feed-atom.php
+|   |-- feed-json.php
+|   |-- author-meta.php
 |   `-- perspective.php
 |-- src/
 |   `-- perspective-panel.tsx
@@ -72,6 +91,7 @@ byline-feed/
     |-- test-adapter-ppa.php
     |-- test-author-contract.php
     |-- test-feed-atom.php
+    |-- test-feed-json.php
     |-- test-feed-rss2.php
     `-- test-perspective.php
 ```
@@ -128,7 +148,7 @@ Release discipline:
 
 - update `CHANGELOG.md` when shipping real releases
 - draft public release notes using `RELEASE_NOTES.md`
-- include the Codex disclosure note in release notes when AI materially affected the release
+- include the AI-assistance disclosure note in release notes when AI materially affected the release
 
 ## Design constraints
 
@@ -141,18 +161,18 @@ Key architectural rules carried through the docs and plugin:
 
 ## AI assistance disclosure
 
-This repository includes material changes produced with OpenAI Codex assistance.
+This repository includes material changes produced with AI assistance (OpenAI Codex and Anthropic Claude).
 
 Preferred attribution model:
 
 - Repository ownership and accountability remain with the human maintainer.
-- Commits with substantial AI-generated changes may include an `Assisted-by: Codex` trailer.
+- Commits with substantial AI-generated changes may include an `Assisted-by:` trailer naming the tool used.
 - AI assistance is disclosed explicitly rather than represented as human co-authorship.
 
 Practical note:
 
 - GitHub's contributor graph reflects commit author identity, not assistance trailers.
-- Codex is disclosed in repository documentation and commit trailers, but is not represented as a separate GitHub contributor account.
+- AI tools are disclosed in repository documentation and commit trailers, but are not represented as separate GitHub contributor accounts.
 
 See also:
 

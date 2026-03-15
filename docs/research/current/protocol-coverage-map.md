@@ -83,7 +83,7 @@ Which protocols carry which identity signals. This is the core of the coverage m
 - **What it adds:** Structured author identity (`byline:person`), content perspective (`byline:perspective`), author roles (`byline:role`), affiliation/COI disclosure, IndieWeb profile references (`/now`, `/uses`)
 - **Design:** Additive — never removes or replaces standard feed elements. Ignored by readers that don't support it.
 - **Trust model:** Declared metadata. No built-in verification, but profile links enable `rel="me"` mutual linking as a social-proof layer.
-- **WordPress status:** No existing implementation. Byline Feed plugin will be the first. See [implementation-spec.md](../../planning/implementation-spec.md).
+- **WordPress status:** Byline Feed is now the first known WordPress implementation. See [Implementation Strategy/implementation-spec.md](../../../Implementation%20Strategy/implementation-spec.md).
 
 #### RSS 2.0
 - **Standard:** Stable (Dave Winer / Harvard Law)
@@ -109,7 +109,7 @@ Which protocols carry which identity signals. This is the core of the coverage m
 - **Version:** v1.1 (jsonfeed.org)
 - **Channel:** JSON syndication feeds
 - **Author support:** `author` object with `name`, `url`, `avatar`. `authors` array for multiple. Most capable native multi-author support of any feed format.
-- **WordPress status:** Not in core. Byline spec supports JSON Feed but WordPress implementation is deferred past MVP.
+- **WordPress status:** Not in core. Byline Feed already implements JSON Feed as part of the current feed layer.
 
 ### HTML head protocols
 
@@ -255,7 +255,7 @@ All protocols that carry author identity agree on the same core fields: **name**
 | URL | `byline:url` | `Person.url` | `actor.url` | `u-url` |
 | Avatar | `byline:avatar` | `Person.image` | `actor.icon` | `u-photo` |
 
-The Byline Feed plugin's [normalized author object](../../planning/implementation-spec.md#normalized-author-object-contract) maps to all four without loss.
+The Byline Feed plugin's [normalized author object](../../../Implementation%20Strategy/implementation-spec.md#normalized-author-object-contract) maps to all four without loss.
 
 ### Where protocols diverge
 
@@ -295,7 +295,7 @@ The coverage map reveals why the Byline Feed plugin is structured as a routing l
 
 1. **No single protocol covers all channels.** You need Byline for feeds, JSON-LD for search, fediverse:creator for Mastodon, and robots/TDM-Rep/ai.txt for rights. Trying to unify these into one spec would either lose channel-specific capabilities or add complexity that each channel's consumers wouldn't understand.
 
-2. **The data model is the shared layer, not the protocol.** The [normalized author contract](../../planning/implementation-spec.md#normalized-author-object-contract) is what unifies. It captures the superset of fields across all protocols; each output module selects what it needs.
+2. **The data model is the shared layer, not the protocol.** The [normalized author contract](../../../Implementation%20Strategy/implementation-spec.md#normalized-author-object-contract) is what unifies. It captures the superset of fields across all protocols; each output module selects what it needs.
 
 3. **Trust is layered, not unified.** A Byline `byline:person` element carries declared metadata (weakest trust). The same author's fediverse:creator tag has domain-verified trust (moderate). Their ActivityPub actor has cryptographically signed trust (strongest). The *data* is the same; the *assurance level* varies by channel. This is correct — different channels serve different purposes.
 
@@ -307,7 +307,7 @@ The coverage map reveals why the Byline Feed plugin is structured as a routing l
 
 - [multi-author-matrix.md](multi-author-matrix.md) — Plugin implementation comparison (the systems that produce author data)
 - [author-identity-vision.md](../../vision/author-identity-vision.md) — Full vision: feeds, schema, fediverse, AI, rights
-- [implementation-spec.md](../../planning/implementation-spec.md) — Byline Feed plugin spec and work packages
+- [Implementation Strategy/implementation-spec.md](../../../Implementation%20Strategy/implementation-spec.md) — Byline Feed plugin spec and work packages
 - [byline-spec-plan.md](../../planning/byline-spec-plan.md) — Byline RSS spec assessment
 - [byline-adoption-strategy.md](../../planning/byline-adoption-strategy.md) — Cross-plugin adoption strategy
 - [architecture.md](architecture.md) — HM Authorship source-level review

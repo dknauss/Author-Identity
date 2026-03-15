@@ -2,7 +2,7 @@
 
 **Date:** March 2026  
 **Scope:** Current audit of `byline-feed/` against the work package specifications (WP-01 through WP-06) and cross-cutting concerns.  
-**Method:** File-by-file comparison of the shipped plugin, tests, CI, and governance docs against [implementation-spec.md](../docs/planning/implementation-spec.md) and the individual work package specs.
+**Method:** File-by-file comparison of the shipped plugin, tests, CI, and governance docs against [Implementation Strategy/implementation-spec.md](implementation-spec.md) and the individual work package specs.
 
 ---
 
@@ -41,6 +41,8 @@ These are the meaningful remaining gaps after WP-01/WP-02 completion.
 ### 1. WP-04, WP-05, and WP-06 are still entirely unimplemented
 
 The adapter layer already normalizes `fediverse` and `ai_consent` fields, but there is no user UI, meta registration, front-end output, or tests for fediverse attribution, JSON-LD, or rights/consent handling. The roadmap is still front-loaded around feeds and perspective only.
+
+`ap_actor_url` is now part of the official WP-04/WP-05 design boundary, but only as a cross-cutting field for those work packages. It is not a standalone roadmap item. `did:web:` remains vision-level future work and should not be treated as an active post-Gate-A deliverable.
 
 ### 2. WP-03 has manual editor verification, but no automated editor coverage
 
@@ -103,7 +105,12 @@ The reorganized research set now makes a clearer distinction between current roa
 - persistent identifiers later (`ORCID`, `ROR`, `DOI`)
 - an eventual publication/organization model beyond just author bylines
 
-But they do not justify expanding the near-term plugin scope yet. Near-term execution still runs through WP-04, WP-05, and then HM Authorship support before broader graph or identifier work.
+But they do not justify expanding the near-term plugin scope yet. Near-term execution still runs through WP-04, WP-05, HM Authorship support, and only then WP-06 before broader graph or identifier work.
+
+Related scope rule:
+
+- `ap_actor_url` is in-scope as a concrete WP-04/WP-05 design field.
+- `did:web:` remains deferred future identity work until the current output roadmap ships and there is a concrete consumer for DID-based identity.
 
 ### 9. Testing roadmap should stay specific, not generic
 
@@ -144,14 +151,15 @@ The following items appeared in earlier audits but are now resolved:
 | **Current state** | #3 (Gate A complete) | MVP quality gate is satisfied; keep CI green and maintain release discipline |
 | **Post-Gate-A hardening** | #2 (WP-03 editor automation), #9 (specific testing roadmap) | Close the main shipped-scope verification gap without reopening Gate A |
 | **Next adapter tranche** | #4 (Authorship support) | Implement immediately after WP-04/05; prior art exists, but it must be ported into the standalone plugin rather than merged directly |
+| **Later roadmap work** | #1 (WP-06) | Follow the HM Authorship tranche; this is the most policy-sensitive work and should not jump ahead of the cleaner next adapter tranche |
 | **Pre-1.0 spec alignment** | Multi-author-per-item divergence, JSON Feed structure divergence, terminology drift (`organization` / `publication` / `publisher`) | Resolve the known Byline-spec structural and terminology issues with the spec author before calling the plugin a stable 1.0 implementation |
-| **Next product work** | #1 (WP-04/05/06) | After Gate A, the main remaining roadmap value is in additional output channels |
+| **Next product work** | #1 (WP-04/05) | After Gate A, the main remaining roadmap value is in the next output channels before the HM Authorship and WP-06 tranches |
 | **Process hygiene** | #6, #7 (track dev-tooling advisories, use changelog consistently) | Keeps maintenance and release quality disciplined without blocking feature work |
 
 ---
 
 ## Related documents
 
-- [implementation-spec.md](../docs/planning/implementation-spec.md) — Work packages, cross-cutting concerns, delivery schedule
+- [Implementation Strategy/implementation-spec.md](implementation-spec.md) — Work packages, cross-cutting concerns, delivery schedule
 - [wp-01.md](wp-01.md) through [wp-06.md](wp-06.md) — Individual work package specifications
 - [docs/quality/TEST_COVERAGE_MATRIX.md](../docs/quality/TEST_COVERAGE_MATRIX.md) — Current test coverage by domain
