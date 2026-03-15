@@ -104,7 +104,7 @@ Source-level inspection of the codebase ([plume-models/src/posts.rs](https://git
 - **Receiving side** (posts.rs lines 630-653). When parsing an incoming Article, the code iterates the `attributedTo` list using a fold. For each URL, it first tries `User::from_id()` — if that succeeds, the entry is an author and gets pushed into an authors vec. If that fails, it tries `Blog::from_id()` — if that succeeds, it's the blog. This design doesn't depend on ordering or type annotations; it resolves each URL dynamically. Multiple Users all accumulate in the authors vec.
 
 > [!TIP]
-> **What is Vec?:** Vec is a growable, heap-allocated data structure in Rust, similar to a dynamic array or an ArrayList in other languages. It is used to store a collection of items (such as posts, comments, or IDs) that can change in size at runtime.
+> **What is Vec?** Vec is a growable, heap-allocated data structure in Rust, similar to a dynamic array or an ArrayList in other languages. It is used to store a collection of items (such as posts, comments, or IDs) that can change in size at runtime.
 
 **The significance:** Plume's architecture is designed from the start for multi-author `attributedTo`. The join table, the `Vec<User>` return type, and the receiving-side fold that accumulates multiple authors are all in place. The Lemmy team wrote specific handling code for Plume's `attributedTo` format, and the SocialHub forum documents cross-platform interop with this pattern.
 
