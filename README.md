@@ -2,6 +2,12 @@
 
 Structured author identity that travels with the work across feeds, search, the fediverse, and AI from one source of truth in WordPress.
 
+## What this project is
+
+A WordPress plugin that normalizes author identity data from any multi-author plugin (Co-Authors Plus, PublishPress Authors, Molongui, HM Authorship, core WP) and routes it to multiple output channels: Byline RSS/Atom feeds, JSON-LD schema, `fediverse:creator` meta tags, TDM/AI consent headers. One adapter layer, many outputs.
+
+**The mental model:** WordPress is a Personal Data Server for authors. The author's WP profile is their everything folder. The plugin makes that PDS speak the open web's formats. Output channels are reactive to the normalized author data — none of them own it.
+
 ## What this repository contains
 
 This repository has two related parts:
