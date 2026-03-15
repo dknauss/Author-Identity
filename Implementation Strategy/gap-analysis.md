@@ -153,7 +153,7 @@ The following items appeared in earlier audits but are now resolved:
 - JSON Feed now has automated coverage for document shape, author deduplication, per-item roles, perspective output, omission behavior, and feed metadata.
 - The perspective UI has been manually verified on the local Studio site, which surfaced and corrected an editor asset enqueue bug.
 - The block editor perspective panel now has committed Playwright coverage via a self-contained `wp-env` harness.
-- A stable Playground output-demo bundle now exists for deterministic inspection of shipped outputs; the CAP/PPA adapter-demo bundle remains later backlog work.
+- A stable Playground output-demo bundle now exists for deterministic inspection of shipped outputs, and a public Playground launch now works through an immutable published blueprint; the CAP/PPA adapter-demo bundle remains later backlog work.
 - Atom now has filter parity with RSS2 (renamed to `byline_feed_atom_entry_xml`).
 - Feed layer code duplication resolved — shared `output_person()` in `feed-common.php` (R-1).
 - Atom filter naming resolved — format-specific filter names (R-2).

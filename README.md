@@ -150,6 +150,8 @@ The current Playground strategy is intentionally two-tiered:
 - [playground/output-demo/](playground/output-demo/) is the stable source-of-truth bundle for demonstrating shipped outputs
 - a later adapter-demo blueprint will showcase real Co-Authors Plus and PublishPress Authors integration without burdening the primary public demo
 
+[![Try in Playground](https://img.shields.io/badge/Try%20in-Playground-21759B?logo=wordpress&logoColor=white)](https://playground.wordpress.net/?blueprint-url=https%3A%2F%2Fraw.githubusercontent.com%2Fdknauss%2FAuthor-Identity%2F037e2d2c7a4e53737caeb7436a3fbdbd30b86909%2Fplayground%2Fpublic%2Foutput-demo.blueprint.json&url=%2F%3Fp%3D1&mode=browser-full-screen&login=no)
+
 Use the output-demo bundle locally with:
 
 ```bash
@@ -162,7 +164,7 @@ Build a shareable snapshot ZIP with:
 playground/bin/build-output-demo-snapshot.sh
 ```
 
-The public `Try in Playground` CTA should point to a snapshot built from the output-demo bundle, not directly to a mutable branch install.
+The public `Try in Playground` CTA uses an immutable published blueprint pinned to the `playground-output-demo` tag. Local snapshot ZIPs remain useful for offline sharing, archived demos, and reproducible local inspection.
 
 ## Governance
 

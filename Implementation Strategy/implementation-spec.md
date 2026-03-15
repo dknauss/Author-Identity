@@ -200,7 +200,7 @@ The first stable Playground target is an output-demo bundle:
   - `fediverse:creator` meta tags
   - JSON-LD `Article` + ordered `Person` schema
 
-This target exists to demonstrate shipped outputs, not upstream adapter behavior. It is the right foundation for a later public `Try in Playground` CTA because it avoids dependency on third-party plugin setup and keeps output deterministic across runs.
+This target exists to demonstrate shipped outputs, not upstream adapter behavior. It is now the foundation for the public `Try in Playground` CTA through an immutable published blueprint, which avoids dependency on third-party plugin setup and keeps output deterministic across runs.
 
 ### Secondary later target: adapter demo
 

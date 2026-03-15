@@ -7,7 +7,7 @@ This directory holds reproducible WordPress Playground assets for `byline-feed`.
 - [output-demo](./output-demo/README.md)
   - primary stable demo target
   - showcases shipped outputs with deterministic injected author fixtures
-  - intended to back a later public snapshot-based `Try in Playground` CTA
+  - now backs the public `Try in Playground` CTA through an immutable published blueprint
 
 ## Later target
 

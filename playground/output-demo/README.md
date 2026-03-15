@@ -26,5 +26,6 @@ Expected demo URLs:
 
 Notes:
 - This is the source-of-truth bundle for the public Playground demo.
-- A later public CTA should point to a snapshot ZIP built from this bundle, not directly to a mutable branch install.
+- The public CTA points to an immutable published blueprint pinned to the `playground-output-demo` tag, not to a mutable branch install.
+- Local snapshot ZIPs built from this bundle are still useful for offline sharing and local archival demos.
 - A separate adapter-demo blueprint for Co-Authors Plus and PublishPress Authors is intentionally deferred.
