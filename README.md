@@ -129,7 +129,7 @@ The public Playground demo runs the actual `byline-feed` plugin code, but uses s
 Use the output-demo bundle locally with:
 
 ```bash
-npx @wp-playground/cli@latest server --blueprint=playground/output-demo/blueprint.json
+npx @wp-playground/cli@latest server --blueprint=playground/output-demo.blueprint.json
 ```
 
 Build a shareable snapshot ZIP with:
