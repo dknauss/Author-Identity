@@ -18,7 +18,7 @@ What it installs:
 Local usage:
 
 ```bash
-npx @wp-playground/cli@latest server --blueprint=playground/output-demo/blueprint.json
+npx @wp-playground/cli@latest server --blueprint=playground/output-demo.blueprint.json
 ```
 
 ## Demo routes
