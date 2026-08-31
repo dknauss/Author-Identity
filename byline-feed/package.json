@@ -22,7 +22,7 @@
 	},
 	"overrides": {
 		"copy-webpack-plugin": {
-			"serialize-javascript": "7.0.3"
+			"serialize-javascript": "7.0.5"
 		},
 		"@sentry/node": {
 			"minimatch": "9.0.7"
@@ -36,6 +36,13 @@
 		"extract-zip": {
 			"yauzl": "3.2.1"
 		},
-		"webpack-dev-server": "5.2.2"
+		"webpack-dev-server": "5.2.6",
+		"adm-zip": "0.6.0",
+		"brace-expansion": "2.1.4",
+		"js-yaml": "4.3.1",
+		"linkify-it": "5.0.2",
+		"markdown-it": "14.2.0",
+		"uuid": "11.1.1",
+		"body-parser": "1.20.6"
 	}
 }
